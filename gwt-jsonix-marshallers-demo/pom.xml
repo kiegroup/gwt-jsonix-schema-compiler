@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <!-- POM file generated with GWT webAppCreator -->
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.kogito</groupId>
+    <artifactId>gwt.jsonix.marshallers</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>gwt.jsonix.marshallers.demo</artifactId>
+  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- ensure all GWT deps use the same version (unless overridden) -->
+      <dependency>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt</artifactId>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-servlet</artifactId>
+      <version>${gwt.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+      <version>${gwt.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-dev</artifactId>
+      <version>${gwt.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt.gwtmockito</groupId>
+      <artifactId>gwtmockito</artifactId>
+      <version>1.1.8</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Output classes directly into the webapp, so that IDEs and "mvn process-classes" update them in DevMode -->
+    <!--    <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>-->
+    <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
+    <finalName>${project.artifactId}</finalName>
+
+    <plugins>
+      <!-- GWT Maven Plugin-->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>gwt-maven-plugin</artifactId>
+        <version>${gwt.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>generateAsync</goal>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <strict>true</strict>
+          <module>org.kogito.App</module>
+          <style>PRETTY</style>
+          <compileReport>true</compileReport>
+          <soycDetailed>true</soycDetailed>
+          <logLevel>TRACE</logLevel>
+          <noServer>false</noServer>
+          <superDevMode>true</superDevMode>
+          <runTarget>App.html</runTarget>
+          <hostedWebapp>src/main/webapp</hostedWebapp>
+          <compileSourcesArtifacts>
+<!--            <compileSourcesArtifact>org.kogito:org.eclipse.emf.ecore.xmi</compileSourcesArtifact>-->
+<!--            <compileSourcesArtifact>org.kogito:bpmn-eclipse-models</compileSourcesArtifact>-->
+          </compileSourcesArtifacts>
+
+        </configuration>
+      </plugin>
+
+      <!-- Skip normal test execution, we use gwt:test instead -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+</project>
