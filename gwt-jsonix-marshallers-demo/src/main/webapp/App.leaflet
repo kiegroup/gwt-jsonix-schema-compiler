@@ -1,33 +1,35 @@
 <!doctype html>
-<!-- The DOCTYPE declaration above will set the     -->
-<!-- browser's rendering engine into                -->
-<!-- "Standards Mode". Replacing this declaration   -->
-<!-- with a "Quirks Mode" doctype is not supported. -->
+<!-- The DOCTYPE declaration above will set the    -->
+<!-- browser's rendering engine into               -->
+<!-- "Standards Mode". Replacing this declaration  -->
+<!-- with a "Quirks Mode" doctype may lead to some -->
+<!-- differences in layout.                        -->
 
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <script src="leaflet/MainJs.js"></script>
+    <script src="leaflet/test.js"></script>
 
     <!--                                                               -->
     <!-- Consider inlining CSS to reduce the number of requested files -->
     <!--                                                               -->
-    <link type="text/css" rel="stylesheet" href="App.css">
+    <link type="text/css" rel="stylesheet" href="leafletwrapper.css">
 
     <!--                                           -->
     <!-- Any title is fine                         -->
     <!--                                           -->
     <title>Web Application Starter Project</title>
 
-    <script type="text/javascript" src="js/require.js" data-main="js/main.js"></script>
     <!--                                           -->
     <!-- This script loads your compiled module.   -->
     <!-- If you add any GWT meta tags, they must   -->
     <!-- be added before this line.                -->
     <!--                                           -->
     <script type="text/javascript" language="javascript" src="app/app.nocache.js"></script>
-
-
-
+     
   </head>
 
   <!--                                           -->
@@ -37,6 +39,9 @@
   <!--                                           -->
   <body>
 
+    <!-- OPTIONAL: include this if you want history support -->
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+
     <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
     <noscript>
       <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
@@ -44,52 +49,8 @@
         in order for this application to display correctly.
       </div>
     </noscript>
-
-    <div id="map" style="height:180px;">
-
-    <h1>Purchase order from <span id="orderDate"></span></h1>
-
-    <p>Please see <a href="po.xml">po.xml</a>.</p>
-
-    <h2>Shipping address</h2>
-
-    <dl>
-      <dt>Name</dt>
-      <dd id="shipTo.name"></dd>
-      <dt>Street</dt>
-      <dd id="shipTo.piripicchio"></dd>
-      <dt>City</dt>
-      <dd id="shipTo.city"></dd>
-      <dt>State</dt>
-      <dd id="shipTo.state"></dd>
-      <dt>Country</dt>
-      <dd id="shipTo.country"></dd>
-    </dl>
-
-    <h2>Billing address</h2>
-
-    <dl>
-      <dt>Name</dt>
-      <dd id="billTo.name"></dd>
-      <dt>Street</dt>
-      <dd id="billTo.piripicchio"></dd>
-      <dt>City</dt>
-      <dd id="billTo.city"></dd>
-      <dt>State</dt>
-      <dd id="billTo.state"></dd>
-      <dt>Country</dt>
-      <dd id="billTo.country"></dd>
-    </dl>
-
-    <h2>Purchase details</h2>
-
-    <dl>
-      <dt>Number of items</dt>
-      <dd id="items.quantity"></dd>
-      <dt>Total price</dt>
-      <dd id="items.usPrice"></dd>
-    </dl>
-
-
+    <h1>Leaflet</h1>
+     <div id="map" style="height:180px;">
+     </div>
   </body>
 </html>

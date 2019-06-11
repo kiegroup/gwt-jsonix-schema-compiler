@@ -26,6 +26,7 @@
   </properties>
 
   <modules>
+    <module>gwt-jsonix-wrapper</module>
     <module>gwt-jsonix-marshallers-demo</module>
   </modules>
 

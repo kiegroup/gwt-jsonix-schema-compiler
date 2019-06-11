@@ -8,13 +8,6 @@
 <module rename-to='app'>
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
-  <inherits name="com.google.gwt.xml.XML" />
-
-  <!-- Inherit the default GWT style sheet.  You can change       -->
-  <!-- the theme of your GWT application by uncommenting          -->
-  <!-- any one of the following lines.                            -->
-  <inherits name='com.google.gwt.user.theme.clean.Clean'/>
-
 
 
   <!-- Specify the paths for translatable code                    -->
@@ -24,6 +17,4 @@
 
   <set-property name="user.agent" value="safari" />
 
-  <!--  &lt;!&ndash; allow Super Dev Mode &ndash;&gt;-->
-  <!--  <add-linker name="xsiframe"/>-->
 </module>

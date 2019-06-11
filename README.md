@@ -7,5 +7,5 @@
  
 ```
    mvn install
-   cd org.eclipse.emf.ecore.xmi.demo && mvn gwt:run
+   cd gwt-jsonix-marshallers-demo && mvn gwt:run
 ```
