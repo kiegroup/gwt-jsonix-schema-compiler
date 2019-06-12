@@ -27,7 +27,7 @@ public class POObject extends JavaScriptObject {
     }-*/;
 
 
-    public final native PO getValue() /*-{
+    public final native PurchaseOrderType getValue() /*-{
         return this.value;
     }-*/;
 }

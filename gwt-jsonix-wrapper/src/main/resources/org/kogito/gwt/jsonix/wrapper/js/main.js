@@ -21,6 +21,17 @@ define(["Jsonix-all", "PO"], function (JsonixModule, POModule) {
             unmarshaller.unmarshalURL('po.xml', callback);
         },
 
+        marshalDocument: function (value) {
+            // // Jsonix usage
+
+            // Create Jsonix context
+            var context = new Jsonix.Context([PO]);
+
+            // Create unmarshaller
+            var marshaller = context.createMarshaller();
+            return marshaller.marshalDocument(value);
+        },
+
         setValues: function () {
 
             // // Jsonix usage

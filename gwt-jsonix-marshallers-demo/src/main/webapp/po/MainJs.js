@@ -21,5 +21,16 @@ MainJs = {
             console.log("inner unmarshalURL");
             return main.unmarshalURL(callback);
         });
+    },
+
+    marshalDocument: function (value, callback) {
+        console.log("outer marshalDocument");
+        require(["main"], function (main) {
+            console.log("inner marshalDocument");
+            var xmlDocument = main.marshalDocument(value);
+            var s = new XMLSerializer();
+            var toReturn = s.serializeToString(xmlDocument);
+            callback(toReturn);
+        });
     }
 }

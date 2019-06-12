@@ -15,25 +15,10 @@
  */
 package org.kogito.gwt.jsonix.wrapper;
 
-import jsinterop.annotations.JsMethod;
-import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
+import jsinterop.annotations.JsFunction;
 
-@JsType(isNative = true, namespace = JsPackage.GLOBAL)
-public class MainJs {
+@JsFunction
+public interface MarshallerCallback {
 
-    @JsMethod
-    public static native void setValues();
-
-    @JsMethod
-    public static native void setValue(String id, String value);
-
-    @JsMethod
-    public static native void unmarshalURL(UnmarshallerCallback unmarshallerCallback);
-
-    @JsMethod
-    public static native void marshalDocument(POObject poObject, MarshallerCallback marshallerCallback);
-
+    void callEvent(String xmlString);
 }
-

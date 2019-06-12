@@ -21,5 +21,13 @@ MainJs = {
             console.log("inner unmarshalURL");
             return main.unmarshalURL(callback);
         });
+    },
+
+    marshalDocument: function (value) {
+        console.log("outer marshalDocument");
+        require(["main"], function (main) {
+            console.log("inner marshalDocument");
+            return main.marshalDocument(value);
+        });
     }
 }

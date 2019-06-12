@@ -1,15 +1,14 @@
 package org.kogito.client;
 
-import java.util.List;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RootPanel;
-import org.kogito.gwt.jsonix.wrapper.Item;
 import org.kogito.gwt.jsonix.wrapper.Items;
+import org.kogito.gwt.jsonix.wrapper.Items.Item;
 import org.kogito.gwt.jsonix.wrapper.MainJs;
-import org.kogito.gwt.jsonix.wrapper.PO;
+import org.kogito.gwt.jsonix.wrapper.POObject;
+import org.kogito.gwt.jsonix.wrapper.PurchaseOrderType;
 import org.kogito.gwt.jsonix.wrapper.USAddress;
 
 /**
@@ -25,17 +24,32 @@ public class App implements EntryPoint {
             + "attempting to contact the server. Please check your network "
             + "connection and try again.";
 
+    private POObject PO_OBJECT = null;
+
     /**
      * This is the entry point method.
      */
     public void onModuleLoad() {
         final Button changeValueButton = new Button("CHANGE VALUE");
         final Button unmarshallButton = new Button("UNMARSHALL");
+        final Button marshallButton = new Button("MARSHALL");
         RootPanel.get("changeValueButtonContainer").add(changeValueButton);
         RootPanel.get("unmarshallButtonContainer").add(unmarshallButton);
+        RootPanel.get("marshallButtonContainer").add(marshallButton);
+        marshallButton.setEnabled(false);
         MainJs.setValues();
         changeValueButton.addClickHandler(event -> changeValue());
-        unmarshallButton.addClickHandler(event -> unmarshalURL());
+        unmarshallButton.addClickHandler(event -> {
+            unmarshalURL();
+            marshallButton.setEnabled(true);
+            unmarshallButton.setEnabled(false);
+        });
+        marshallButton.addClickHandler(event -> {
+            marshalDocument();
+            marshallButton.setEnabled(false);
+            unmarshallButton.setEnabled(true);
+        });
+
     }
 
     private void changeValue() {
@@ -44,10 +58,11 @@ public class App implements EntryPoint {
 
     private void unmarshalURL() {
         MainJs.unmarshalURL(poObject -> {
+            PO_OBJECT = poObject;
             GWT.log("unmarshalURL poObject.toString() " + poObject.toString());
             GWT.log("unmarshalURL poObject.getClass() " + poObject.getClass());
             GWT.log("unmarshalURL poObject.getName() " + poObject.getName());
-            PO po = poObject.getValue();
+            PurchaseOrderType po = poObject.getValue();
             GWT.log("unmarshalURL po.toString() " + po.toString());
             GWT.log("unmarshalURL po.getClass() " + po.getClass());
             GWT.log("unmarshalURL po.getComment() " + po.getComment());
@@ -64,7 +79,7 @@ public class App implements EntryPoint {
             GWT.log("unmarshalURL shipTo.getPiripicchio() " + shipTo.getPiripicchio());
             GWT.log("unmarshalURL shipTo.getState() " + shipTo.getState());
             final Items items = po.getItems();
-            final Item[] item = items.getItem();
+            final Items.Item[] item = items.getItem();
             for (int i = 0; i < item.length; i ++) {
                 Item itm = item[i];
                 GWT.log("unmarshalURL itm.getComment() " + itm.getComment());
@@ -73,7 +88,13 @@ public class App implements EntryPoint {
                 GWT.log("unmarshalURL itm.getQuantity() " + itm.getQuantity());
             }
         });
+    }
 
+    private void marshalDocument() {
+        MainJs.marshalDocument(PO_OBJECT, xmlString -> {
+            GWT.log("marshalDocument xmlString " + xmlString);
+            PO_OBJECT = null;
+        });
     }
 
 }

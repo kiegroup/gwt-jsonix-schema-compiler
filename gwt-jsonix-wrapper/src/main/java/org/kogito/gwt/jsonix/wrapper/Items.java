@@ -1,52 +1,156 @@
-/*
- * Copyright 2019 Red Hat, Inc. and/or its affiliates.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 package org.kogito.gwt.jsonix.wrapper;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Date;
 
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
+/**
+ * JSInterop adapter for <code>Items</code>
+ * 
+ */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL)
 public class Items {
 
+
     /**
-     * Gets the value of the item property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the item property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getItem().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Item }
-     *
-     *
+     * Getter for <b>item</b>
+     * 
+     * @return
+     *      <b>item</<b>
      */
-     @JsProperty
-    public  final native Item[] getItem();
+    @JsProperty
+    public final native Item[] getItem();
+
+    /**
+     * Setter for <b>item</b>
+     * 
+     * @param item
+     *      <b>item</<b> to set.
+     */
+    @JsProperty
+    public final native void setItem(Item[] item);
+
+
+    /**
+     * JSInterop adapter for <code>Item</code>
+     * 
+     */
+    @JsType(isNative = true, namespace = JsPackage.GLOBAL)
+    public static class Item {
+
+
+        /**
+         * Getter for <b>productName</b>
+         * 
+         * @return
+         *      <b>productName</<b>
+         */
+        @JsProperty
+        public final native String getProductName();
+
+        /**
+         * Setter for <b>productName</b>
+         * 
+         * @param productName
+         *      <b>productName</<b> to set.
+         */
+        @JsProperty
+        public final native void setProductName(String productName);
+
+        /**
+         * Getter for <b>quantity</b>
+         * 
+         * @return
+         *      <b>quantity</<b>
+         */
+        @JsProperty
+        public final native Integer getQuantity();
+
+        /**
+         * Setter for <b>quantity</b>
+         * 
+         * @param quantity
+         *      <b>quantity</<b> to set.
+         */
+        @JsProperty
+        public final native void setQuantity(Integer quantity);
+
+        /**
+         * Getter for <b>usPrice</b>
+         * 
+         * @return
+         *      <b>usPrice</<b>
+         */
+        @JsProperty
+        public final native BigDecimal getUSPrice();
+
+        /**
+         * Setter for <b>usPrice</b>
+         * 
+         * @param usPrice
+         *      <b>usPrice</<b> to set.
+         */
+        @JsProperty
+        public final native void setUSPrice(BigDecimal usPrice);
+
+        /**
+         * Getter for <b>comment</b>
+         * 
+         * @return
+         *      <b>comment</<b>
+         */
+        @JsProperty
+        public final native String getComment();
+
+        /**
+         * Setter for <b>comment</b>
+         * 
+         * @param comment
+         *      <b>comment</<b> to set.
+         */
+        @JsProperty
+        public final native void setComment(String comment);
+
+        /**
+         * Getter for <b>shipDate</b>
+         * 
+         * @return
+         *      <b>shipDate</<b>
+         */
+        @JsProperty
+        public final native Date getShipDate();
+
+        /**
+         * Setter for <b>shipDate</b>
+         * 
+         * @param shipDate
+         *      <b>shipDate</<b> to set.
+         */
+        @JsProperty
+        public final native void setShipDate(Date shipDate);
+
+        /**
+         * Getter for <b>partNum</b>
+         * 
+         * @return
+         *      <b>partNum</<b>
+         */
+        @JsProperty
+        public final native String getPartNum();
+
+        /**
+         * Setter for <b>partNum</b>
+         * 
+         * @param partNum
+         *      <b>partNum</<b> to set.
+         */
+        @JsProperty
+        public final native void setPartNum(String partNum);
+
+    }
 
 }
