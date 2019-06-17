@@ -1,0 +1,123 @@
+<ScenarioSimulationModel version="1.4">
+  <simulation>
+    <simulationDescriptor>
+      <factMappings>
+        <FactMapping>
+          <expressionElements>
+            <ExpressionElement>
+              <step>#</step>
+            </ExpressionElement>
+          </expressionElements>
+          <expressionIdentifier>
+            <name>Index</name>
+            <type>OTHER</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>#</name>
+            <className>java.lang.Integer</className>
+          </factIdentifier>
+          <className>java.lang.Integer</className>
+          <factAlias>#</factAlias>
+        </FactMapping>
+        <FactMapping>
+          <expressionElements>
+            <ExpressionElement>
+              <step>Scenario description</step>
+            </ExpressionElement>
+          </expressionElements>
+          <expressionIdentifier>
+            <name>Description</name>
+            <type>OTHER</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>Scenario description</name>
+            <className>java.lang.String</className>
+          </factIdentifier>
+          <className>java.lang.String</className>
+          <factAlias>Scenario description</factAlias>
+        </FactMapping>
+        <FactMapping>
+          <expressionElements>
+            <ExpressionElement>
+              <step>1545231213318</step>
+            </ExpressionElement>
+          </expressionElements>
+          <expressionIdentifier>
+            <name>1545231213318</name>
+            <type>GIVEN</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>1545231213318</name>
+            <className>java.lang.Boolean</className>
+          </factIdentifier>
+          <className>java.lang.Boolean</className>
+          <factAlias>Boolean</factAlias>
+          <expressionAlias>value</expressionAlias>
+        </FactMapping>
+        <FactMapping>
+          <expressionElements>
+            <ExpressionElement>
+              <step>1545231216876</step>
+            </ExpressionElement>
+          </expressionElements>
+          <expressionIdentifier>
+            <name>1545231216876</name>
+            <type>EXPECT</type>
+          </expressionIdentifier>
+          <factIdentifier>
+            <name>1545231216876</name>
+            <className>java.lang.Integer</className>
+          </factIdentifier>
+          <className>java.lang.Integer</className>
+          <factAlias>Integer</factAlias>
+          <expressionAlias>value</expressionAlias>
+        </FactMapping>
+      </factMappings>
+      <dmoSession>default</dmoSession>
+      <type>RULE</type>
+      <fileName></fileName>
+      <kieSession>default</kieSession>
+      <kieBase>default</kieBase>
+      <ruleFlowGroup>default</ruleFlowGroup>
+    </simulationDescriptor>
+    <scenarios>
+      <Scenario>
+        <factMappingValues>
+          <FactMappingValue>
+            <factIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping[2]/factIdentifier"/>
+            <expressionIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping[2]/expressionIdentifier"/>
+          </FactMappingValue>
+          <FactMappingValue>
+            <factIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping/factIdentifier"/>
+            <expressionIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping/expressionIdentifier"/>
+            <rawValue class="string">1</rawValue>
+          </FactMappingValue>
+          <FactMappingValue>
+            <factIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping[3]/factIdentifier"/>
+            <expressionIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping[3]/expressionIdentifier"/>
+            <rawValue class="string">true</rawValue>
+          </FactMappingValue>
+          <FactMappingValue>
+            <factIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping[4]/factIdentifier"/>
+            <expressionIdentifier reference="../../../../../simulationDescriptor/factMappings/FactMapping[4]/expressionIdentifier"/>
+            <rawValue class="string">1</rawValue>
+          </FactMappingValue>
+        </factMappingValues>
+        <simulationDescriptor reference="../../../simulationDescriptor"/>
+      </Scenario>
+    </scenarios>
+  </simulation>
+  <imports>
+    <imports>
+      <Import>
+        <type>java.lang.Integer</type>
+      </Import>
+      <Import>
+        <type>java.lang.String</type>
+      </Import>
+      <Import>
+        <type>java.lang.Boolean</type>
+      </Import>
+    </imports>
+  </imports>
+</ScenarioSimulationModel>

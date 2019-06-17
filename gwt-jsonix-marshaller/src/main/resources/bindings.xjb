@@ -7,14 +7,14 @@
 
 	jaxb:extensionBindingPrefixes="jsonix">
 
-	<jaxb:bindings schemaLocation="purchaseorder.xsd" node="/xs:schema">
+	<jaxb:bindings schemaLocation="scesim.xsd" node="/xs:schema">
 		<jaxb:schemaBindings>
-			<jaxb:package name="org.kogito.gwt.jsonix.marshaller.po"/>
+			<jaxb:package name="org.kogito.gwt.jsonix.marshaller.js.model"/>
 		</jaxb:schemaBindings>
 
 		<jsonix:packageMapping
-			packageName="org.kogito.gwt.jsonix.marshaller.po"
-			spaceName="PO"/>
+			packageName="org.kogito.gwt.jsonix.marshaller.js.model"
+			spaceName="SCESIM"/>
 		
 	</jaxb:bindings>
 

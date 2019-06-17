@@ -1,5 +1,5 @@
 
-package org.kogito.gwt.jsonix.marshaller.po;
+package org.kogito.gwt.jsonix.marshaller.js.model;
 
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
@@ -7,17 +7,17 @@ import jsinterop.annotations.JsType;
 
 
 /**
- * JSInterop container for <code>JSIPurchaseOrderType</code>
+ * JSInterop container for <code>JSIScenarioSimulationModelType</code>
  * 
  */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL)
-public class PO {
+public class SCESIM {
 
 
     @JsProperty
     public final native String getName();
 
     @JsProperty
-    public final native JSIPurchaseOrderType getValue();
+    public final native JSIScenarioSimulationModelType getValue();
 
 }

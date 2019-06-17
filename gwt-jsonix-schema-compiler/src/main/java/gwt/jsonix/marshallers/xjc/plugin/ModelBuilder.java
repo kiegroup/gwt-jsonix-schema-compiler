@@ -150,9 +150,8 @@ public class ModelBuilder {
             CValuePropertyInfo cValuePropertyInfo = (CValuePropertyInfo) cPropertyInfo;
             final CNonElement cNonElement = cValuePropertyInfo.getTarget();
             fullClassName = cNonElement.getTypeName().toString();
-        } else if (cPropertyInfo instanceof CReferencePropertyInfo) {
-            CReferencePropertyInfo cReferencePropertyInfo = (CReferencePropertyInfo) cPropertyInfo;
-            fullClassName = cReferencePropertyInfo.getSchemaType().toString();
+        } else if (cPropertyInfo instanceof CReferencePropertyInfo && cPropertyInfo.getSchemaType() != null) {
+            fullClassName = cPropertyInfo.getSchemaType().toString();
         }
         if (fullClassName == null) {
             throw new Exception("Failed to retrieve className for " + cPropertyInfo.getName(true));

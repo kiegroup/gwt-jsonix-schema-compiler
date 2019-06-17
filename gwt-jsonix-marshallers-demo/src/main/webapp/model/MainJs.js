@@ -1,12 +1,12 @@
-define('mainLocal', ["Jsonix-all", "PO"], function (JsonixModule, POModule) {
+define('mainLocal', ["Jsonix-all", "SCESIM"], function (JsonixModule, SCESIMModule) {
 
     var Jsonix = JsonixModule.Jsonix;
-    var PO = POModule.PO;
+    var SCESIM = SCESIMModule.SCESIM;
     return {
         unmarshallLocal: function (text, callback) {
             console.log("unmarshallLocal");
             // Create Jsonix context
-            var context = new Jsonix.Context([PO]);
+            var context = new Jsonix.Context([SCESIM]);
 
             // Create unmarshaller
             var unmarshaller = context.createUnmarshaller();
@@ -17,7 +17,7 @@ define('mainLocal', ["Jsonix-all", "PO"], function (JsonixModule, POModule) {
         marshallLocal: function (value, callback) {
             console.log("marshallLocal");
             // Create Jsonix context
-            var context = new Jsonix.Context([PO]);
+            var context = new Jsonix.Context([SCESIM]);
 
             // Create unmarshaller
             var marshaller = context.createMarshaller();

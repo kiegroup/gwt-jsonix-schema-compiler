@@ -1,33 +1,49 @@
+define('mainLocal', ["Jsonix-all", "SCESIM"], function (JsonixModule, SCESIMModule) {
+
+    var Jsonix = JsonixModule.Jsonix;
+    var SCESIM = SCESIMModule.SCESIM;
+    return {
+        unmarshallLocal: function (text, callback) {
+            console.log("unmarshallLocal");
+            // Create Jsonix context
+            var context = new Jsonix.Context([SCESIM]);
+
+            // Create unmarshaller
+            var unmarshaller = context.createUnmarshaller();
+            var toReturn = unmarshaller.unmarshalString(text);
+            callback(toReturn);
+        },
+
+        marshallLocal: function (value, callback) {
+            console.log("marshallLocal");
+            // Create Jsonix context
+            var context = new Jsonix.Context([SCESIM]);
+
+            // Create unmarshaller
+            var marshaller = context.createMarshaller();
+
+            var xmlDocument = marshaller.marshalDocument(value);
+            var s = new XMLSerializer();
+            var toReturn = s.serializeToString(xmlDocument);
+            callback(toReturn);
+        }
+    }
+});
+
 MainJs = {
-    setValues: function () {
-        console.log("outer setValues");
-        require(["main"], function (main) {
-            console.log("inner setValues " + main);
-            main.setValues();
+    unmarshall: function (text, callback) {
+        console.log("out unmarshall");
+        require(["mainLocal"], function(mainLocal) {
+            console.log("inner unmarshall");
+            mainLocal.unmarshallLocal(text, callback);
         });
     },
 
-    setValue: function (id, value) {
-        console.log("outer setValue " + id + " " + value);
-        require(["main"], function (main) {
-            console.log("inner setValue " +  main + " " + id + " " + value);
-            main.setValue(id, value);
-        });
-    },
-
-    unmarshalURL: function (callback) {
-        console.log("outer unmarshalURL");
-        require(["main"], function (main) {
-            console.log("inner unmarshalURL");
-            return main.unmarshalURL(callback);
-        });
-    },
-
-    marshalDocument: function (value) {
-        console.log("outer marshalDocument");
-        require(["main"], function (main) {
-            console.log("inner marshalDocument");
-            return main.marshalDocument(value);
+    marshall: function (value, callback) {
+        console.log("outer marshall");
+        require(["mainLocal"], function(mainLocal) {
+            console.log("inner unmarshall");
+            mainLocal.marshallLocal(value, callback);
         });
     }
 }
