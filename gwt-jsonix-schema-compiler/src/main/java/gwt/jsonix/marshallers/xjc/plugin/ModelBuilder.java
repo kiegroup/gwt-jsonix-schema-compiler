@@ -176,7 +176,7 @@ public class ModelBuilder {
         JCommentPart getterCommentReturnPart = getterComment.addReturn();
         commentString = " <b>" + privatePropertyName + "</<b>";
         getterCommentReturnPart.add(commentString);
-        getterMethod.annotate(jCodeModel.ref(JsProperty.class));
+        getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
     }
 
     protected static void addSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
@@ -191,7 +191,7 @@ public class ModelBuilder {
         JCommentPart setterCommentParameterPart = setterComment.addParam(privatePropertyName);
         commentString = " <b>" + privatePropertyName + "</<b> to set.";
         setterCommentParameterPart.add(commentString);
-        setterMethod.annotate(jCodeModel.ref(JsProperty.class));
+        setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
     }
 
     protected static String cleanupFullClassName(String outerClassName, String fullClassName) {
