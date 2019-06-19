@@ -81,9 +81,14 @@ public class ModelBuilder {
                 .param("isNative", true)
                 .param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"))
                 .param("name", cClassInfo.shortName);
+        addTypeNameGetter(toPopulate, jDefinedClass);
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap);
         }
+    }
+
+    protected static void addTypeNameGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
+        addGetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), "typeName", "TYPE_NAME");
     }
 
     protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JDefinedClass> definedClassesMap) throws Exception {
