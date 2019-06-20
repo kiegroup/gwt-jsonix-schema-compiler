@@ -24,6 +24,7 @@ import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JCommentPart;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
+import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.tools.xjc.model.CAttributePropertyInfo;
@@ -39,6 +40,7 @@ import com.sun.tools.xjc.model.Model;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import jsinterop.base.JsArrayLike;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
 
@@ -47,22 +49,30 @@ import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
  */
 public class ModelBuilder {
 
+    protected static final String newInstanceTemplate = "\n\n\n\npublic static native %1$s newInstance() /*-{\n" +
+            "        var json = \"{\\\"TYPE_NAME\\\": \\\"%2$s\\\"}\";\n" +
+            "        var retrieved = JSON.parse(json)\n" +
+            "        console.log(\"retrieved \" + retrieved);\n" +
+            "        return retrieved\n" +
+            "    }-*/;";
+
     /**
      * Method to create the <b>JSInterop</b> representation oif <b>xsd</b> definitions
      * @param definedClassesMap
      * @param model
      * @param jCodeModel
+     * @param packageModuleMap
      * @throws Exception
      */
-    public static void generateJSInteropModels(Map<String, JDefinedClass> definedClassesMap, Model model, JCodeModel jCodeModel) throws Exception {
+    public static void generateJSInteropModels(Map<String, JDefinedClass> definedClassesMap, Model model, JCodeModel jCodeModel, Map<String, String> packageModuleMap) throws Exception {
         definedClassesMap.clear();
         log(Level.FINE, "Generating  JSInterop code...", null);
         for (CClassInfo cClassInfo : model.beans().values()) {
-            populateJCodeModel(definedClassesMap, jCodeModel, cClassInfo);
+            populateJCodeModel(definedClassesMap, jCodeModel, cClassInfo, packageModuleMap);
         }
     }
 
-    protected static void populateJCodeModel(Map<String, JDefinedClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo) throws Exception {
+    protected static void populateJCodeModel(Map<String, JDefinedClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo, Map<String, String> packageModuleMap) throws Exception {
         log(Level.FINE, "Generating  JCode model...", null);
         final CClassInfoParent parent = cClassInfo.parent();
         final JDefinedClass jDefinedClass;
@@ -78,17 +88,35 @@ public class ModelBuilder {
         String commentString = "JSInterop adapter for <code>" + cClassInfo.shortName + "</code>";
         comment.append(commentString);
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
-                .param("isNative", true)
+//                .param("isNative", true)
                 .param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"))
                 .param("name", cClassInfo.shortName);
-        addTypeNameGetter(toPopulate, jDefinedClass);
+        addTypeNameGetter(toPopulate, jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
+        addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap);
         }
     }
 
-    protected static void addTypeNameGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
-        addGetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), "typeName", "TYPE_NAME");
+    protected static void addTypeNameGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String moduleName, String originalName) {
+        String methodName = "getTypeName";
+        int mod = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
+        final JClass stringRef = jCodeModel.ref(String.class);
+        JMethod typeNameMethod = jDefinedClass.method(mod, stringRef, methodName);
+        JDocComment methodComment = typeNameMethod.javadoc();
+        String commentString = "Get TYPE_NAME for <code>" + jDefinedClass.name() + "</code>";
+        methodComment.append(commentString);
+        String fullName = moduleName + "." + originalName;
+        JCommentPart methodCommentReturnPart = methodComment.addReturn();
+        commentString = "<b>" + fullName + "</b>";
+        methodCommentReturnPart.add(commentString);
+        typeNameMethod.body()._return(JExpr.lit(fullName));
+    }
+
+    protected static void addNewInstance(JDefinedClass jDefinedClass, String moduleName, String originalName) {
+        String fullName = moduleName + "." + originalName;
+        String directString = String.format(newInstanceTemplate, jDefinedClass.name(), fullName);
+        jDefinedClass.direct(directString);
     }
 
     protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JDefinedClass> definedClassesMap) throws Exception {
@@ -104,7 +132,12 @@ public class ModelBuilder {
         JClass typeRef = jCodeModel.ref(fullClassName);
         log(Level.FINE, typeRef.toString(), null);
         if (cPropertyInfo.isCollection()) {
-            return typeRef.array();
+            if (typeRef._package().name().startsWith("java")) {
+                return typeRef.array();
+            } else {
+                JClass rawArrayListClass = jCodeModel.ref(JsArrayLike.class);
+                return rawArrayListClass.narrow(typeRef);
+            }
         } else {
             return typeRef;
         }
@@ -133,7 +166,7 @@ public class ModelBuilder {
                 final CTypeRef cTypeRef = cElementPropertyInfo.getTypes().get(0);
                 final CNonElement target = cTypeRef.getTarget();
                 if (target != null) {
-                    if (target instanceof CClassInfo && ((CClassInfo) target).parent() != null  && definedClassesMap.containsKey(((CClassInfo) target).parent().fullName())) {
+                    if (target instanceof CClassInfo && ((CClassInfo) target).parent() != null && definedClassesMap.containsKey(((CClassInfo) target).parent().fullName())) {
                         fullClassName = definedClassesMap.get(((CClassInfo) target).parent().fullName()).fullName() + "." + cPropertyInfo.getName(true);
                     } else if (target.getType() != null) {
                         fullClassName = target.getType().fullName();

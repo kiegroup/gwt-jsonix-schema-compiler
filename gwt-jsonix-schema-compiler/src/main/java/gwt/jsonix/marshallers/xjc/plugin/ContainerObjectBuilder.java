@@ -81,19 +81,29 @@ public class ContainerObjectBuilder {
     protected static void addNameProperty(JCodeModel jCodeModel, JDefinedClass toPopulate) {
         log(Level.FINE, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
         JClass parameterRef = jCodeModel.ref(String.class);
-        addProperty(jCodeModel, toPopulate, parameterRef, "name");
+        addGetterProperty(jCodeModel, toPopulate, parameterRef, "name");
     }
 
     protected static void addValueProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JDefinedClass containedClass) {
         log(Level.FINE, String.format("Add getValue property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
-        addProperty(jCodeModel, toPopulate, containedClass, "value");
+        addGetterProperty(jCodeModel, toPopulate, containedClass, "value");
+        addSetterProperty(jCodeModel, toPopulate, containedClass, "value");
     }
 
-    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
+    protected static void addGetterProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
         String methodName = "get" + StringUtils.capitalize(propertyName);
         log(Level.FINE, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod method = toPopulate.method(mod, parameterRef, methodName);
+        method.annotate(jCodeModel.ref(JsProperty.class));
+    }
+
+    protected static void addSetterProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
+        String methodName = "set" + StringUtils.capitalize(propertyName);
+        log(Level.FINE, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
+        int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
+        JMethod method = toPopulate.method(mod, Void.TYPE, methodName);
+        method.param(parameterRef, propertyName);
         method.annotate(jCodeModel.ref(JsProperty.class));
     }
 }
