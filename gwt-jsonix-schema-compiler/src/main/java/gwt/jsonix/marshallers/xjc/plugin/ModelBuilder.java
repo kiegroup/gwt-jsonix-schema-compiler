@@ -52,7 +52,6 @@ public class ModelBuilder {
     protected static final String newInstanceTemplate = "\n\n\n\npublic static native %1$s newInstance() /*-{\n" +
             "        var json = \"{\\\"TYPE_NAME\\\": \\\"%2$s\\\"}\";\n" +
             "        var retrieved = JSON.parse(json)\n" +
-            "        console.log(\"retrieved \" + retrieved);\n" +
             "        return retrieved\n" +
             "    }-*/;";
 
@@ -187,7 +186,11 @@ public class ModelBuilder {
         } else if (cPropertyInfo instanceof CValuePropertyInfo) {
             CValuePropertyInfo cValuePropertyInfo = (CValuePropertyInfo) cPropertyInfo;
             final CNonElement cNonElement = cValuePropertyInfo.getTarget();
-            fullClassName = cNonElement.getTypeName().toString();
+            if (cNonElement.getType() != null) {
+                fullClassName = cNonElement.getType().fullName();
+            } else {
+                fullClassName = cNonElement.getTypeName().toString();
+            }
         } else if (cPropertyInfo instanceof CReferencePropertyInfo && cPropertyInfo.getSchemaType() != null) {
             fullClassName = cPropertyInfo.getSchemaType().toString();
         }
