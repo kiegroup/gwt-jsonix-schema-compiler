@@ -24,7 +24,6 @@ import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JCommentPart;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
-import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.tools.xjc.model.CAttributePropertyInfo;
@@ -65,7 +64,7 @@ public class ModelBuilder {
      */
     public static void generateJSInteropModels(Map<String, JDefinedClass> definedClassesMap, Model model, JCodeModel jCodeModel, Map<String, String> packageModuleMap) throws Exception {
         definedClassesMap.clear();
-        log(Level.FINE, "Generating  JSInterop code...", null);
+        log(Level.FINE, "Generating JSInterop code...", null);
         for (CClassInfo cClassInfo : model.beans().values()) {
             populateJCodeModel(definedClassesMap, jCodeModel, cClassInfo, packageModuleMap);
         }
@@ -87,29 +86,12 @@ public class ModelBuilder {
         String commentString = "JSInterop adapter for <code>" + cClassInfo.shortName + "</code>";
         comment.append(commentString);
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
-//                .param("isNative", true)
                 .param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"))
                 .param("name", cClassInfo.shortName);
-        addTypeNameGetter(toPopulate, jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
         addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap);
         }
-    }
-
-    protected static void addTypeNameGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String moduleName, String originalName) {
-        String methodName = "getTypeName";
-        int mod = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
-        final JClass stringRef = jCodeModel.ref(String.class);
-        JMethod typeNameMethod = jDefinedClass.method(mod, stringRef, methodName);
-        JDocComment methodComment = typeNameMethod.javadoc();
-        String commentString = "Get TYPE_NAME for <code>" + jDefinedClass.name() + "</code>";
-        methodComment.append(commentString);
-        String fullName = moduleName + "." + originalName;
-        JCommentPart methodCommentReturnPart = methodComment.addReturn();
-        commentString = "<b>" + fullName + "</b>";
-        methodCommentReturnPart.add(commentString);
-        typeNameMethod.body()._return(JExpr.lit(fullName));
     }
 
     protected static void addNewInstance(JDefinedClass jDefinedClass, String moduleName, String originalName) {
