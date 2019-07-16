@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
  * JSInterop adapter for <code>FactIdentifierReferenceType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "FactIdentifierReferenceType")
+@JsType(namespace = JsPackage.GLOBAL, name = "FactIdentifierReferenceType")
 public class JSIFactIdentifierReferenceType {
 
 
@@ -20,7 +20,7 @@ public class JSIFactIdentifierReferenceType {
      * @return
      *      <b>reference</<b>
      */
-    @JsProperty
+    @JsProperty(name = "reference")
     public final native String getReference();
 
     /**
@@ -29,7 +29,15 @@ public class JSIFactIdentifierReferenceType {
      * @param reference
      *      <b>reference</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "reference")
     public final native void setReference(String reference);
+    
 
+
+
+public static native JSIFactIdentifierReferenceType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.FactIdentifierReferenceType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }

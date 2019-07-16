@@ -27,8 +27,8 @@
 
   <modules>
     <module>gwt-jsonix-schema-compiler</module>
-    <module>gwt-jsonix-marshaller</module>
-    <module>gwt-jsonix-marshallers-demo</module>
+<!--    <module>gwt-jsonix-marshaller</module>-->
+<!--    <module>gwt-jsonix-marshallers-demo</module>-->
   </modules>
 
   <dependencyManagement>

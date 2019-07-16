@@ -4,13 +4,14 @@ package org.kogito.gwt.jsonix.marshaller.js.model;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+import jsinterop.base.JsArrayLike;
 
 
 /**
  * JSInterop adapter for <code>InnerImportsType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "InnerImportsType")
+@JsType(namespace = JsPackage.GLOBAL, name = "InnerImportsType")
 public class JSIInnerImportsType {
 
 
@@ -20,8 +21,8 @@ public class JSIInnerImportsType {
      * @return
      *      <b>_import</<b>
      */
-    @JsProperty
-    public final native JSIImportType[] getImport();
+    @JsProperty(name = "_import")
+    public final native JsArrayLike<JSIImportType> getImport();
 
     /**
      * Setter for <b>_import</b>
@@ -29,7 +30,15 @@ public class JSIInnerImportsType {
      * @param _import
      *      <b>_import</<b> to set.
      */
-    @JsProperty
-    public final native void setImport(JSIImportType[] _import);
+    @JsProperty(name = "_import")
+    public final native void setImport(JsArrayLike<JSIImportType> _import);
+    
 
+
+
+public static native JSIInnerImportsType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.InnerImportsType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }

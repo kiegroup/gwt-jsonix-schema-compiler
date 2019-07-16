@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
  * JSInterop adapter for <code>ImportType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "ImportType")
+@JsType(namespace = JsPackage.GLOBAL, name = "ImportType")
 public class JSIImportType {
 
 
@@ -20,7 +20,7 @@ public class JSIImportType {
      * @return
      *      <b>type</<b>
      */
-    @JsProperty
+    @JsProperty(name = "type")
     public final native String getType();
 
     /**
@@ -29,7 +29,15 @@ public class JSIImportType {
      * @param type
      *      <b>type</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "type")
     public final native void setType(String type);
+    
 
+
+
+public static native JSIImportType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.ImportType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }

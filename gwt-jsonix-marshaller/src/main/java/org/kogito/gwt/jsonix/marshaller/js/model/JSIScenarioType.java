@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
  * JSInterop adapter for <code>ScenarioType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "ScenarioType")
+@JsType(namespace = JsPackage.GLOBAL, name = "ScenarioType")
 public class JSIScenarioType {
 
 
@@ -20,7 +20,7 @@ public class JSIScenarioType {
      * @return
      *      <b>factMappingValues</<b>
      */
-    @JsProperty
+    @JsProperty(name = "factMappingValues")
     public final native JSIFactMappingValuesType getFactMappingValues();
 
     /**
@@ -29,7 +29,7 @@ public class JSIScenarioType {
      * @param factMappingValues
      *      <b>factMappingValues</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "factMappingValues")
     public final native void setFactMappingValues(JSIFactMappingValuesType factMappingValues);
 
     /**
@@ -38,7 +38,7 @@ public class JSIScenarioType {
      * @return
      *      <b>simulationDescriptor</<b>
      */
-    @JsProperty
+    @JsProperty(name = "simulationDescriptor")
     public final native JSISimulationDescriptorType getSimulationDescriptor();
 
     /**
@@ -47,7 +47,15 @@ public class JSIScenarioType {
      * @param simulationDescriptor
      *      <b>simulationDescriptor</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "simulationDescriptor")
     public final native void setSimulationDescriptor(JSISimulationDescriptorType simulationDescriptor);
+    
 
+
+
+public static native JSIScenarioType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.ScenarioType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }

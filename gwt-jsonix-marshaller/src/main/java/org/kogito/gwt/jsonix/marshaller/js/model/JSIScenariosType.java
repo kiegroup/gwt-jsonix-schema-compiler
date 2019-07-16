@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
  * JSInterop adapter for <code>ScenariosType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "ScenariosType")
+@JsType(namespace = JsPackage.GLOBAL, name = "ScenariosType")
 public class JSIScenariosType {
 
 
@@ -20,7 +20,7 @@ public class JSIScenariosType {
      * @return
      *      <b>scenario</<b>
      */
-    @JsProperty
+    @JsProperty(name = "scenario")
     public final native JSIScenarioType getScenario();
 
     /**
@@ -29,7 +29,15 @@ public class JSIScenariosType {
      * @param scenario
      *      <b>scenario</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "scenario")
     public final native void setScenario(JSIScenarioType scenario);
+    
 
+
+
+public static native JSIScenariosType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.ScenariosType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }

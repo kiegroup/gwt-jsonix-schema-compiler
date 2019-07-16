@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
  * JSInterop adapter for <code>ScenarioSimulationModelType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "ScenarioSimulationModelType")
+@JsType(namespace = JsPackage.GLOBAL, name = "ScenarioSimulationModelType")
 public class JSIScenarioSimulationModelType {
 
 
@@ -20,7 +20,7 @@ public class JSIScenarioSimulationModelType {
      * @return
      *      <b>simulation</<b>
      */
-    @JsProperty
+    @JsProperty(name = "simulation")
     public final native JSISimulationType getSimulation();
 
     /**
@@ -29,7 +29,7 @@ public class JSIScenarioSimulationModelType {
      * @param simulation
      *      <b>simulation</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "simulation")
     public final native void setSimulation(JSISimulationType simulation);
 
     /**
@@ -38,7 +38,7 @@ public class JSIScenarioSimulationModelType {
      * @return
      *      <b>imports</<b>
      */
-    @JsProperty
+    @JsProperty(name = "imports")
     public final native JSIImportsType getImports();
 
     /**
@@ -47,7 +47,7 @@ public class JSIScenarioSimulationModelType {
      * @param imports
      *      <b>imports</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "imports")
     public final native void setImports(JSIImportsType imports);
 
     /**
@@ -56,7 +56,7 @@ public class JSIScenarioSimulationModelType {
      * @return
      *      <b>version</<b>
      */
-    @JsProperty
+    @JsProperty(name = "version")
     public final native Float getVersion();
 
     /**
@@ -65,7 +65,15 @@ public class JSIScenarioSimulationModelType {
      * @param version
      *      <b>version</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "version")
     public final native void setVersion(Float version);
+    
 
+
+
+public static native JSIScenarioSimulationModelType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.ScenarioSimulationModelType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }

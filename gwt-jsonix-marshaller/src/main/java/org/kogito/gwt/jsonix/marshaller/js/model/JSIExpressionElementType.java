@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
  * JSInterop adapter for <code>ExpressionElementType</code>
  * 
  */
-@JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "ExpressionElementType")
+@JsType(namespace = JsPackage.GLOBAL, name = "ExpressionElementType")
 public class JSIExpressionElementType {
 
 
@@ -20,7 +20,7 @@ public class JSIExpressionElementType {
      * @return
      *      <b>step</<b>
      */
-    @JsProperty
+    @JsProperty(name = "step")
     public final native String getStep();
 
     /**
@@ -29,7 +29,15 @@ public class JSIExpressionElementType {
      * @param step
      *      <b>step</<b> to set.
      */
-    @JsProperty
+    @JsProperty(name = "step")
     public final native void setStep(String step);
+    
 
+
+
+public static native JSIExpressionElementType newInstance() /*-{
+        var json = "{\"TYPE_NAME\": \"SCESIM.ExpressionElementType\"}";
+        var retrieved = JSON.parse(json)
+        return retrieved
+    }-*/;
 }
