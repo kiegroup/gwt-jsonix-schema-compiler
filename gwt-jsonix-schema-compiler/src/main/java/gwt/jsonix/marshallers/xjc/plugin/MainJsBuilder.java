@@ -28,7 +28,6 @@ import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.ErrorHandler;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.MAIN_JS;
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.MARSHALL_CALLBACK;
@@ -41,8 +40,6 @@ public class MainJsBuilder {
 
     /**
      * Method to create the <b>JSInterop</b> <code>MainJs</code> class
-     *
-     *
      * @param callbacksMap
      * @param containersClasses
      * @param jCodeModel
@@ -59,11 +56,15 @@ public class MainJsBuilder {
         if (basePackage.contains(".")) {
             basePackage = basePackage.substring(0, basePackage.lastIndexOf("."));
         }
-        final JDefinedClass jDefinedClass = toPopulate._class(basePackage + "." + MAIN_JS);
-        JDocComment comment = jDefinedClass.javadoc();
-        String commentString = "JSInterop adapter to use for marshalling/unmarshalling.";
-        comment.append(commentString);
-        jDefinedClass.annotate(toPopulate.ref(JsType.class)).param("isNative", true).param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"));
+        String fullMainJsName = basePackage + "." + MAIN_JS;
+        JDefinedClass jDefinedClass = toPopulate._getClass(fullMainJsName);
+        if (jDefinedClass == null) {
+            jDefinedClass = toPopulate._class(basePackage + "." + MAIN_JS);
+            JDocComment comment = jDefinedClass.javadoc();
+            String commentString = "JSInterop adapter to use for marshalling/unmarshalling.";
+            comment.append(commentString);
+            jDefinedClass.annotate(toPopulate.ref(JsType.class)).param("isNative", true).param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"));
+        }
         addUnmarshall(toPopulate, jDefinedClass, callbackMap.get(UNMARSHALL_CALLBACK));
         addMarshall(toPopulate, jDefinedClass, containerRef, callbackMap.get(MARSHALL_CALLBACK));
     }

@@ -173,8 +173,12 @@ public class ModelBuilder {
             } else {
                 fullClassName = cNonElement.getTypeName().toString();
             }
-        } else if (cPropertyInfo instanceof CReferencePropertyInfo && cPropertyInfo.getSchemaType() != null) {
-            fullClassName = cPropertyInfo.getSchemaType().toString();
+        } else if (cPropertyInfo instanceof CReferencePropertyInfo) {
+            if (cPropertyInfo.getSchemaType() != null) {
+                fullClassName = cPropertyInfo.getSchemaType().toString();
+            } else if (outerClass != null && outerClass.contains(".")) {
+                fullClassName = outerClass.substring(0, outerClass.lastIndexOf(".") +1) + cPropertyInfo.getName(true);
+            }
         }
         if (fullClassName == null) {
             throw new Exception("Failed to retrieve className for " + cPropertyInfo.getName(true));
