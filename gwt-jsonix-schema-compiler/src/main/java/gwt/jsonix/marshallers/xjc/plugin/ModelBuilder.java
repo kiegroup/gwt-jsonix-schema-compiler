@@ -17,6 +17,7 @@ package gwt.jsonix.marshallers.xjc.plugin;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 
 import com.sun.codemodel.JClass;
@@ -29,6 +30,8 @@ import com.sun.codemodel.JMod;
 import com.sun.tools.xjc.model.CAttributePropertyInfo;
 import com.sun.tools.xjc.model.CClassInfo;
 import com.sun.tools.xjc.model.CClassInfoParent;
+import com.sun.tools.xjc.model.CElement;
+import com.sun.tools.xjc.model.CElementInfo;
 import com.sun.tools.xjc.model.CElementPropertyInfo;
 import com.sun.tools.xjc.model.CNonElement;
 import com.sun.tools.xjc.model.CPropertyInfo;
@@ -89,6 +92,27 @@ public class ModelBuilder {
                 .param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"))
                 .param("name", cClassInfo.shortName);
         addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
+//        Outline beanGenerator = BeanGenerator.generate(cClassInfo.model, new ErrorReceiver() {
+//            @Override
+//            public void error(SAXParseException exception) throws AbortException {
+//
+//            }
+//
+//            @Override
+//            public void fatalError(SAXParseException exception) throws AbortException {
+//
+//            }
+//
+//            @Override
+//            public void warning(SAXParseException exception) throws AbortException {
+//
+//            }
+//
+//            @Override
+//            public void info(SAXParseException exception) {
+//
+//            }
+//        });
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap);
         }
@@ -174,10 +198,22 @@ public class ModelBuilder {
                 fullClassName = cNonElement.getTypeName().toString();
             }
         } else if (cPropertyInfo instanceof CReferencePropertyInfo) {
-            if (cPropertyInfo.getSchemaType() != null) {
+            final Set<CElement> elements = ((CReferencePropertyInfo) cPropertyInfo).getElements();
+            if (elements != null && !elements.isEmpty()) {
+                final CElementInfo cElement = (CElementInfo) elements.toArray()[0];
+                fullClassName = cElement.fullName();
+                if (fullClassName.contains("<") && fullClassName.contains(">")) {
+                    fullClassName = fullClassName.substring(fullClassName.lastIndexOf("<") + 1, fullClassName.indexOf(">"));
+                }
+                String actualClassName = fullClassName.substring(fullClassName.lastIndexOf(".") + 1);
+                if (!actualClassName.startsWith("JSI")) {
+                    actualClassName = "JSI" + actualClassName;
+                }
+                fullClassName = fullClassName.substring(0, fullClassName.lastIndexOf(".") +1) + actualClassName;
+            } else if (cPropertyInfo.getSchemaType() != null) {
                 fullClassName = cPropertyInfo.getSchemaType().toString();
             } else if (outerClass != null && outerClass.contains(".")) {
-                fullClassName = outerClass.substring(0, outerClass.lastIndexOf(".") +1) + cPropertyInfo.getName(true);
+                fullClassName = outerClass.substring(0, outerClass.lastIndexOf(".") + 1) + cPropertyInfo.getName(true);
             }
         }
         if (fullClassName == null) {
