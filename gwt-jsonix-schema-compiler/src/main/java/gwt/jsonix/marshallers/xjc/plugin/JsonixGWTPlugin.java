@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -41,12 +39,14 @@ import org.hisrc.jsonix.configuration.ModulesConfiguration;
 import org.hisrc.jsonix.configuration.ModulesConfigurationUnmarshaller;
 import org.hisrc.jsonix.configuration.OutputConfiguration;
 import org.hisrc.jsonix.context.DefaultJsonixContext;
+import org.hisrc.jsonix.settings.LogLevelSetting;
 import org.hisrc.jsonix.xjc.plugin.JsonixPlugin;
 import org.kohsuke.args4j.CmdLineException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.createCodeWriter;
+import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.writeJSInteropCode;
 
 /**
@@ -95,7 +95,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     @Override
     public boolean run(Outline outline, Options opt, ErrorHandler errorHandler) throws SAXException {
         super.run(outline, opt, errorHandler);
-        log(Level.FINE, "run", null);
+        log(LogLevelSetting.DEBUG, "run", null);
         try {
             Model model = outline.getModel();
             JCodeModel jCodeModel = new JCodeModel();
@@ -109,7 +109,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
             MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, jCodeModel);
             writeJSInteropCode(jCodeModel, codeWriter);
         } catch (Exception e) {
-            log(Level.SEVERE, e.getMessage(), e);
+            log(LogLevelSetting.ERROR, e.getMessage(), e);
             throw new SAXException(e);
         }
         return true;
@@ -121,7 +121,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     protected List<JDefinedClass> getMainObjectsList(final Map<String, JDefinedClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
-        log(Level.FINE, "getMainObjectsList", null);
+        log(LogLevelSetting.DEBUG, "getMainObjectsList", null);
         Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
         return StreamSupport.stream(spliterator, false)
                 .map(CElementInfo::getContentType)
@@ -132,7 +132,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     protected Map<String, String> getPackageModuleMap(Model model) {
-        log(Level.FINE, "getPackageModuleMap", null);
+        log(LogLevelSetting.DEBUG, "getPackageModuleMap", null);
         GWTSettings settings = getSettings();
         final DefaultJsonixContext context = new DefaultJsonixContext();
         final OutputConfiguration defaultOutputConfiguration = new OutputConfiguration(
@@ -146,15 +146,4 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         return modulesConfiguration.getMappingConfigurations().stream().collect(Collectors.toMap(MappingConfiguration::getPackage, MappingConfiguration::getName));
     }
 
-    protected void log(Level level, String message, Exception e) {
-        if (e != null) {
-            getLog().log(level, message, e);
-        } else {
-            getLog().log(level, message);
-        }
-    }
-
-    protected Logger getLog() {
-        return Logger.getLogger(JsonixGWTPlugin.class.getName());
-    }
 }

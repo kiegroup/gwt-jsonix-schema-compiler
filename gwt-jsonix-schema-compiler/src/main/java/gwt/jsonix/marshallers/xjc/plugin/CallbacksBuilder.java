@@ -18,7 +18,6 @@ package gwt.jsonix.marshallers.xjc.plugin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JClass;
@@ -29,6 +28,7 @@ import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import jsinterop.annotations.JsFunction;
 import org.apache.commons.lang3.StringUtils;
+import org.hisrc.jsonix.settings.LogLevelSetting;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.CALLBACKS;
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.MARSHALL_CALLBACK;
@@ -48,7 +48,7 @@ public class CallbacksBuilder {
      * @throws Exception
      */
     public static Map<String, Map<String, JDefinedClass>> generateJSInteropCallbacks(final List<JDefinedClass> containersClasses, JCodeModel jCodeModel) throws Exception {
-        log(Level.FINE, "Generating  JSInterop callbacks ...", null);
+        log(LogLevelSetting.DEBUG, "Generating  JSInterop callbacks ...", null);
         Map<String, Map<String, JDefinedClass>> toReturn = new HashMap<>();
         for (JDefinedClass containerClass : containersClasses) {
             String basePackage = containerClass._package().name();

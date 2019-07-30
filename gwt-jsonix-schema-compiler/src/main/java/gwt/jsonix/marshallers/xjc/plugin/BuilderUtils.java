@@ -18,14 +18,15 @@ package gwt.jsonix.marshallers.xjc.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.writer.FileCodeWriter;
 import com.sun.codemodel.writer.FilterCodeWriter;
 import com.sun.tools.xjc.model.Model;
+import org.hisrc.jsonix.settings.LogLevelSetting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class used to provide common methods
@@ -60,7 +61,7 @@ public class BuilderUtils {
      * @throws Exception
      */
     public static void writeJSInteropCode(JCodeModel jCodeModel, CodeWriter baseCodeWriter) throws Exception {
-        log(Level.FINE, MessageFormat.format("Writing JSInterop with [{0}].", baseCodeWriter.toString()), null);
+        log(LogLevelSetting.DEBUG, MessageFormat.format("Writing JSInterop with [{0}].", baseCodeWriter.toString()), null);
         try {
             final CodeWriter codeWriter = new FilterCodeWriter(baseCodeWriter);
             jCodeModel.build(codeWriter);
@@ -76,11 +77,43 @@ public class BuilderUtils {
      * @param message
      * @param e provide it to log <b>throwable</b>; could be <code>null</code>
      */
-    public static void log(Level level, String message, Throwable e) {
-        if (e != null) {
-            getLog().log(level, message, e);
-        } else {
-            getLog().log(level, message);
+    public static void log(LogLevelSetting level, String message, Throwable e) {
+        switch (level) {
+            case TRACE:
+                if (e!= null) {
+                    getLog().trace(message, e);
+                } else {
+                    getLog().trace(message);
+                }
+                break;
+            case INFO:
+                if (e!= null) {
+                    getLog().info(message, e);
+                } else {
+                    getLog().info(message);
+                }
+                break;
+            case WARN:
+                if (e!= null) {
+                    getLog().warn(message, e);
+                } else {
+                    getLog().warn(message);
+                }
+                break;
+            case DEBUG:
+                if (e!= null) {
+                    getLog().debug(message, e);
+                } else {
+                    getLog().debug(message);
+                }
+                break;
+            case ERROR:
+                if (e!= null) {
+                    getLog().error(message, e);
+                } else {
+                    getLog().error(message);
+                }
+                break;
         }
     }
 
@@ -88,7 +121,7 @@ public class BuilderUtils {
      * @return <code>Logger</code>
      */
     private static Logger getLog() {
-        return Logger.getLogger(BuilderUtils.class.getName());
+        return LoggerFactory.getLogger(BuilderUtils.class.getName());
     }
 
 }

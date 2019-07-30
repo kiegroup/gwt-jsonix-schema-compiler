@@ -1,7 +1,4 @@
-# Full Client-side JSNOIX GWT Demo
-
-
- ![screen](imgs/screen.gif)
+# Full Client-side JSONIX GWT Demo
 
 ### Usage
  

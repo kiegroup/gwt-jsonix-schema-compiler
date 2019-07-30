@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
 
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
@@ -33,6 +32,7 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
+import org.hisrc.jsonix.settings.LogLevelSetting;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
 
@@ -49,7 +49,7 @@ public class ContainerObjectBuilder {
      * @throws Exception
      */
     public static List<JDefinedClass> generateJSInteropContainerObjects(final Map<String, String> packageModuleMap, final List<JDefinedClass> mainObjectsList, JCodeModel jCodeModel) throws Exception {
-        log(Level.FINE, "Generating  JSInterop containers objects ...", null);
+        log(LogLevelSetting.DEBUG, "Generating  JSInterop containers objects ...", null);
         List<JDefinedClass> toReturn = new ArrayList<>();
         for (Map.Entry<String, String> entry : packageModuleMap.entrySet()) {
             addPackageContainerObject(entry.getKey(), entry.getValue(), jCodeModel, mainObjectsList, toReturn);
@@ -58,7 +58,7 @@ public class ContainerObjectBuilder {
     }
 
     protected static void addPackageContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, final List<JDefinedClass> mainObjectsList, List<JDefinedClass> toPopulate) throws JClassAlreadyExistsException {
-        log(Level.FINE, String.format("Looking for JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
+        log(LogLevelSetting.DEBUG, String.format("Looking for JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
         Optional<JDefinedClass> containedClass = mainObjectsList.stream()
                 .filter(definedClass -> Objects.equals(packageName, definedClass._package().name()))
                 .findFirst();
@@ -68,7 +68,7 @@ public class ContainerObjectBuilder {
     }
 
     protected static JDefinedClass getContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, JDefinedClass containedClass) throws JClassAlreadyExistsException {
-        log(Level.FINE, String.format("Creating  JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
+        log(LogLevelSetting.DEBUG, String.format("Creating  JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
         final JDefinedClass toReturn = jCodeModel._class(packageName + "." + containerObjectName);
         toReturn.annotate(jCodeModel.ref(JsType.class)).param("isNative", true).param("namespace", jCodeModel.ref(JsPackage.class).staticRef("GLOBAL"));
         JDocComment comment = toReturn.javadoc();
@@ -79,20 +79,20 @@ public class ContainerObjectBuilder {
     }
 
     protected static void addNameProperty(JCodeModel jCodeModel, JDefinedClass toPopulate) {
-        log(Level.FINE, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
+        log(LogLevelSetting.DEBUG, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
         JClass parameterRef = jCodeModel.ref(String.class);
         addGetterProperty(jCodeModel, toPopulate, parameterRef, "name");
     }
 
     protected static void addValueProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JDefinedClass containedClass) {
-        log(Level.FINE, String.format("Add getValue property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
+        log(LogLevelSetting.DEBUG, String.format("Add getValue property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
         addGetterProperty(jCodeModel, toPopulate, containedClass, "value");
         addSetterProperty(jCodeModel, toPopulate, containedClass, "value");
     }
 
     protected static void addGetterProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
         String methodName = "get" + StringUtils.capitalize(propertyName);
-        log(Level.FINE, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
+        log(LogLevelSetting.DEBUG, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod method = toPopulate.method(mod, parameterRef, methodName);
         method.annotate(jCodeModel.ref(JsProperty.class));
@@ -100,7 +100,7 @@ public class ContainerObjectBuilder {
 
     protected static void addSetterProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
         String methodName = "set" + StringUtils.capitalize(propertyName);
-        log(Level.FINE, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
+        log(LogLevelSetting.DEBUG, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod method = toPopulate.method(mod, Void.TYPE, methodName);
         method.param(parameterRef, propertyName);
