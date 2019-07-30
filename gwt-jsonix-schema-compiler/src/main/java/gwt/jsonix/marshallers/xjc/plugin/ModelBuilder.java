@@ -27,6 +27,7 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JEnumConstant;
 import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
@@ -80,25 +81,30 @@ public class ModelBuilder {
         log(LogLevelSetting.DEBUG, "Generating  JCode model...", null);
         final CClassInfoParent parent = cClassInfo.parent();
         final JDefinedClass jDefinedClass;
+        final JExpression namespace;
         if (definedClassesMap.containsKey(cClassInfo.fullName())) {
             return;
         } else if (parent != null && definedClassesMap.containsKey(parent.fullName())) {
             int mod = JMod.PUBLIC + JMod.STATIC;
-            jDefinedClass = definedClassesMap.get(parent.fullName())._class(mod, "JSI" + cClassInfo.shortName);
+            String parentFullName =  parent.fullName();
+            jDefinedClass = definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName);
+            String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".")) : parentFullName;
+            namespace = JExpr.lit(parentNamespace);
         } else {
             String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + cClassInfo.shortName;
             jDefinedClass = toPopulate._class(fullClassName);
+            namespace = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
         }
         definedClassesMap.put(cClassInfo.fullName(), jDefinedClass);
         JDocComment comment = jDefinedClass.javadoc();
         String commentString = "JSInterop adapter for <code>" + cClassInfo.shortName + "</code>";
         comment.append(commentString);
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
-                .param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"))
+                .param("namespace", namespace)
                 .param("name", cClassInfo.shortName);
         addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
-            addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model);
+            addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, cClassInfo.shortName);
         }
     }
 
@@ -141,12 +147,12 @@ public class ModelBuilder {
         jDefinedClass.direct(directString);
     }
 
-    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JDefinedClass> definedClassesMap, Map<String, String> packageModuleMap, Model model) throws Exception {
+    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JDefinedClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String namespace) throws Exception {
         final JClass propertyRef = getPropertyRef(jCodeModel, cPropertyInfo, jDefinedClass.fullName(), definedClassesMap, packageModuleMap, model);
         final String publicPropertyName = cPropertyInfo.getName(true);
         final String privatePropertyName = cPropertyInfo.getName(false);
-        addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName);
-        addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName);
+        addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, namespace);
+        addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, namespace);
     }
 
     protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JDefinedClass> definedClassesMap, Map<String, String> packageModuleMap, Model model) throws Exception {
@@ -237,7 +243,7 @@ public class ModelBuilder {
     }
 
     protected static void addGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
-            publicPropertyName, String privatePropertyName) {
+            publicPropertyName, String privatePropertyName, String namespace) {
         String getterMethodName = "get" + publicPropertyName;
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod getterMethod = jDefinedClass.method(mod, propertyRef, getterMethodName);
@@ -247,11 +253,11 @@ public class ModelBuilder {
         JCommentPart getterCommentReturnPart = getterComment.addReturn();
         commentString = " <b>" + privatePropertyName + "</<b>";
         getterCommentReturnPart.add(commentString);
-        getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
+        getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName).param("namespace", namespace);
     }
 
     protected static void addSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
-            publicPropertyName, String privatePropertyName) {
+            publicPropertyName, String privatePropertyName, String namespace) {
         String setterMethodName = "set" + publicPropertyName;
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod setterMethod = jDefinedClass.method(mod, Void.TYPE, setterMethodName);
@@ -262,7 +268,7 @@ public class ModelBuilder {
         JCommentPart setterCommentParameterPart = setterComment.addParam(privatePropertyName);
         commentString = " <b>" + privatePropertyName + "</<b> to set.";
         setterCommentParameterPart.add(commentString);
-        setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
+        setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName).param("namespace", namespace);
     }
 
 }
