@@ -113,6 +113,8 @@ public class ModelBuilder {
         log(LogLevelSetting.DEBUG, "Generating  JCode model...", null);
         String fullClassName = cEnumLeafInfo.parent.getOwnerPackage().name() + ".JSI" + cEnumLeafInfo.shortName;
         final JDefinedClass jDefinedClass = toPopulate._class(fullClassName, ClassType.ENUM);
+        jDefinedClass.annotate(toPopulate.ref(JsType.class))
+                .param("name", cEnumLeafInfo.shortName);
         definedClassesMap.put(cEnumLeafInfo.fullName(), jDefinedClass);
         JDocComment comment = jDefinedClass.javadoc();
         String commentString = "JSInterop adapter for <code>" + cEnumLeafInfo.shortName + "</code>";
@@ -203,7 +205,11 @@ public class ModelBuilder {
         try {
             final Class<?> aClass = Class.forName(originalClassName);
             if (originalClassName.startsWith("java")) {
-                toReturn = Optional.ofNullable(jCodeModel.ref(aClass));
+                JClass ref = jCodeModel.ref(aClass);
+                if (!ref.isPrimitive()) {
+                    ref =  jCodeModel.ref(ref.unboxify().fullName());
+                }
+                toReturn = Optional.ofNullable(ref);
             }
         } catch (ClassNotFoundException e) {
             // ignore
