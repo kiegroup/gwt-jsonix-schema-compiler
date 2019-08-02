@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.sun.codemodel.ClassType;
+import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JCommentPart;
@@ -86,9 +87,9 @@ public class ModelBuilder {
             return;
         } else if (parent != null && definedClassesMap.containsKey(parent.fullName())) {
             int mod = JMod.PUBLIC + JMod.STATIC;
-            String parentFullName =  parent.fullName();
+            String parentFullName = parent.fullName();
             jDefinedClass = definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName);
-            String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".")) : parentFullName;
+            String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".") + 1) : parentFullName;
             namespace = JExpr.lit(parentNamespace);
         } else {
             String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + cClassInfo.shortName;
@@ -135,7 +136,7 @@ public class ModelBuilder {
         mod = JMod.NONE;
         final JMethod constructor = jDefinedClass.constructor(mod);
         final JVar param = constructor.param(propertyRef, privatePropertyName);
-        constructor.body().assign(JExpr._this().ref(field) , param);
+        constructor.body().assign(JExpr._this().ref(field), param);
         mod = JMod.PUBLIC;
         JMethod getterMethod = jDefinedClass.method(mod, propertyRef, privatePropertyName);
         getterMethod.body()._return(field);
@@ -253,7 +254,8 @@ public class ModelBuilder {
         JCommentPart getterCommentReturnPart = getterComment.addReturn();
         commentString = " <b>" + privatePropertyName + "</<b>";
         getterCommentReturnPart.add(commentString);
-        getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName).param("namespace", namespace);
+        final JAnnotationUse name = getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
+        conditionalAddNamespaceToProperty(name, propertyRef, namespace);
     }
 
     protected static void addSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
@@ -268,7 +270,14 @@ public class ModelBuilder {
         JCommentPart setterCommentParameterPart = setterComment.addParam(privatePropertyName);
         commentString = " <b>" + privatePropertyName + "</<b> to set.";
         setterCommentParameterPart.add(commentString);
-        setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName).param("namespace", namespace);
+        final JAnnotationUse name = setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
+        conditionalAddNamespaceToProperty(name, propertyRef, namespace);
     }
 
+    protected static void conditionalAddNamespaceToProperty(JAnnotationUse annotationUse, JClass propertyRef, String nameSpace) {
+        String fullName = propertyRef.isArray() ? propertyRef.elementType().fullName() : propertyRef.fullName();
+        if (!fullName.equals(Object.class.getCanonicalName())) {
+            annotationUse.param("namespace", nameSpace);
+        }
+    }
 }
