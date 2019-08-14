@@ -80,20 +80,29 @@ public class ModelBuilder {
 
     protected static void populateJCodeModel(Map<String, JDefinedClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo, Map<String, String> packageModuleMap, Model model) throws Exception {
         log(LogLevelSetting.DEBUG, "Generating  JCode model...", null);
+        if (definedClassesMap.containsKey(cClassInfo.fullName())) {
+            return;
+        }
         final CClassInfoParent parent = cClassInfo.parent();
         final JDefinedClass jDefinedClass;
         final JExpression namespace;
-        if (definedClassesMap.containsKey(cClassInfo.fullName())) {
-            return;
-        } else if (parent != null && definedClassesMap.containsKey(parent.fullName())) {
+        final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
+        JDefinedClass jDefinedBaseClass = null;
+        if (basecClassInfo != null) { // This is the "extended" class
+            if (!definedClassesMap.containsKey(basecClassInfo.fullName())) {
+                populateJCodeModel(definedClassesMap, toPopulate, basecClassInfo, packageModuleMap, model);
+            }
+            jDefinedBaseClass = definedClassesMap.get(basecClassInfo.fullName());
+        }
+        if (parent != null && definedClassesMap.containsKey(parent.fullName())) { // This is for inner classes
             int mod = JMod.PUBLIC + JMod.STATIC;
             String parentFullName = parent.fullName();
-            jDefinedClass = definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName);
+            jDefinedClass = jDefinedBaseClass != null ? definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName)._extends(jDefinedBaseClass) : definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName);
             String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".") + 1) : parentFullName;
             namespace = JExpr.lit(parentNamespace);
         } else {
             String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + cClassInfo.shortName;
-            jDefinedClass = toPopulate._class(fullClassName);
+            jDefinedClass = jDefinedBaseClass != null ? toPopulate._class(fullClassName)._extends(jDefinedBaseClass) : toPopulate._class(fullClassName);
             namespace = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
         }
         definedClassesMap.put(cClassInfo.fullName(), jDefinedClass);
@@ -207,7 +216,7 @@ public class ModelBuilder {
             if (originalClassName.startsWith("java")) {
                 JClass ref = jCodeModel.ref(aClass);
                 if (!ref.isPrimitive()) {
-                    ref =  jCodeModel.ref(ref.unboxify().fullName());
+                    ref = jCodeModel.ref(ref.unboxify().fullName());
                 }
                 toReturn = Optional.ofNullable(ref);
             }
