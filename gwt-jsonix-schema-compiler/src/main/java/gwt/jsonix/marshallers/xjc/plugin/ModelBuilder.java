@@ -16,6 +16,7 @@
 package gwt.jsonix.marshallers.xjc.plugin;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,15 +40,20 @@ import com.sun.tools.xjc.model.CElement;
 import com.sun.tools.xjc.model.CElementInfo;
 import com.sun.tools.xjc.model.CElementPropertyInfo;
 import com.sun.tools.xjc.model.CEnumLeafInfo;
+import com.sun.tools.xjc.model.CPluginCustomization;
 import com.sun.tools.xjc.model.CPropertyInfo;
 import com.sun.tools.xjc.model.CReferencePropertyInfo;
 import com.sun.tools.xjc.model.Model;
 import com.sun.tools.xjc.model.nav.NClass;
+import gwt.jsonix.marshallers.xjc.plugin.util.JavaTypeParser;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import jsinterop.base.JsArrayLike;
 import org.hisrc.jsonix.settings.LogLevelSetting;
+import org.jvnet.jaxb2_commons.util.CustomizationUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
 
@@ -87,7 +93,15 @@ public class ModelBuilder {
         final JDefinedClass jDefinedClass;
         final JExpression namespace;
         final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
-        JDefinedClass jDefinedBaseClass = null;
+        JClass jDefinedBaseClass = null;
+
+        final CPluginCustomization customization = CustomizationUtils.findCustomization(cClassInfo, JsonixGWTPlugin.CUSTOMIZATION_EXTENDS_NAME);
+        if (Objects.nonNull(customization)) {
+            final Node n = customization.element.getChildNodes().item(0);
+            final String extendsClassName = ((Text) n).getData();
+            jDefinedBaseClass = parseClass(extendsClassName, toPopulate, definedClassesMap);
+        }
+
         if (basecClassInfo != null) { // This is the "extended" class
             if (!definedClassesMap.containsKey(basecClassInfo.fullName())) {
                 populateJCodeModel(definedClassesMap, toPopulate, basecClassInfo, packageModuleMap, model);
@@ -294,5 +308,11 @@ public class ModelBuilder {
         if (!fullName.equals(Object.class.getCanonicalName())) {
             annotationUse.param("namespace", nameSpace);
         }
+    }
+
+    protected static JClass parseClass(String _class,
+                                       JCodeModel codeModel,
+                                       Map<String, JDefinedClass> definedClassesMap) {
+        return new JavaTypeParser(definedClassesMap).parseClass(_class, codeModel);
     }
 }

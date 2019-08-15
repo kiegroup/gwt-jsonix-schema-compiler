@@ -19,9 +19,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import javax.xml.namespace.QName;
 
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JCodeModel;
@@ -56,6 +59,11 @@ public class JsonixGWTPlugin extends JsonixPlugin {
 
     public static final String OPTION_NAME = "Xgwtjsonix";
     public static final String OPTION = "-" + OPTION_NAME;
+
+    public static final String CUSTOMIZATION_EXTENDS = "extends";
+    public static final QName CUSTOMIZATION_EXTENDS_NAME = new QName(ModulesConfiguration.NAMESPACE_URI,
+                                                                     CUSTOMIZATION_EXTENDS,
+                                                                     ModulesConfiguration.DEFAULT_PREFIX);
 
     private GWTSettings settings = new GWTSettings();
 
@@ -120,6 +128,12 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         //
     }
 
+    @Override
+    public boolean isCustomizationTagName(String nsUri, String localName) {
+        boolean isCustomizationTagName = super.isCustomizationTagName(nsUri, localName);
+        return isCustomizationTagName || getCustomizationURIs().contains(nsUri) && Objects.equals(CUSTOMIZATION_EXTENDS, localName);
+    }
+
     protected List<JDefinedClass> getMainObjectsList(final Map<String, JDefinedClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
         log(LogLevelSetting.DEBUG, "getMainObjectsList", null);
         Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
@@ -145,5 +159,4 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         ModulesConfiguration modulesConfiguration = customizationHandler.unmarshal(model, defaultOutputConfiguration, defaultJsonSchemaConfiguration);
         return modulesConfiguration.getMappingConfigurations().stream().collect(Collectors.toMap(MappingConfiguration::getPackage, MappingConfiguration::getName));
     }
-
 }

@@ -95,6 +95,10 @@
     <!--      <groupId>com.google.elemental2</groupId>-->
     <!--      <artifactId>elemental2-core</artifactId>-->
     <!--    </dependency>-->
+    <dependency>
+      <groupId>com.google.code.javaparser</groupId>
+      <artifactId>javaparser</artifactId>
+    </dependency>
   </dependencies>
 
   <dependencyManagement>
@@ -176,6 +180,11 @@
       <!--        <artifactId>elemental2-core</artifactId>-->
       <!--        <version>1.0.0-beta-1</version>-->
       <!--      </dependency>-->
+      <dependency>
+        <groupId>com.google.code.javaparser</groupId>
+        <artifactId>javaparser</artifactId>
+        <version>1.0.11</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
