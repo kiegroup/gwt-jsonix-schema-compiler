@@ -48,7 +48,7 @@ public class ContainerObjectBuilder {
      * @return
      * @throws Exception
      */
-    public static List<JDefinedClass> generateJSInteropContainerObjects(final Map<String, String> packageModuleMap, final List<JDefinedClass> mainObjectsList, JCodeModel jCodeModel) throws Exception {
+    public static List<JDefinedClass> generateJSInteropContainerObjects(final Map<String, String> packageModuleMap, final List<JClass> mainObjectsList, JCodeModel jCodeModel) throws Exception {
         log(LogLevelSetting.DEBUG, "Generating  JSInterop containers objects ...", null);
         List<JDefinedClass> toReturn = new ArrayList<>();
         for (Map.Entry<String, String> entry : packageModuleMap.entrySet()) {
@@ -57,9 +57,9 @@ public class ContainerObjectBuilder {
         return toReturn;
     }
 
-    protected static void addPackageContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, final List<JDefinedClass> mainObjectsList, List<JDefinedClass> toPopulate) throws JClassAlreadyExistsException {
+    protected static void addPackageContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, final List<JClass> mainObjectsList, List<JDefinedClass> toPopulate) throws JClassAlreadyExistsException {
         log(LogLevelSetting.DEBUG, String.format("Looking for JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
-        Optional<JDefinedClass> containedClass = mainObjectsList.stream()
+        Optional<JClass> containedClass = mainObjectsList.stream()
                 .filter(definedClass -> Objects.equals(packageName, definedClass._package().name()))
                 .findFirst();
         if (containedClass.isPresent()) {
@@ -67,7 +67,7 @@ public class ContainerObjectBuilder {
         }
     }
 
-    protected static JDefinedClass getContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, JDefinedClass containedClass) throws JClassAlreadyExistsException {
+    protected static JDefinedClass getContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, JClass containedClass) throws JClassAlreadyExistsException {
         log(LogLevelSetting.DEBUG, String.format("Creating  JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
         final JDefinedClass toReturn = jCodeModel._class(packageName + "." + containerObjectName);
         toReturn.annotate(jCodeModel.ref(JsType.class)).param("isNative", true).param("namespace", jCodeModel.ref(JsPackage.class).staticRef("GLOBAL"));
@@ -84,7 +84,7 @@ public class ContainerObjectBuilder {
         addGetterProperty(jCodeModel, toPopulate, parameterRef, "name");
     }
 
-    protected static void addValueProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JDefinedClass containedClass) {
+    protected static void addValueProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass containedClass) {
         log(LogLevelSetting.DEBUG, String.format("Add getValue property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
         addGetterProperty(jCodeModel, toPopulate, containedClass, "value");
         addSetterProperty(jCodeModel, toPopulate, containedClass, "value");

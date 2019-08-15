@@ -49,6 +49,10 @@
       <artifactId>jaxb2-basics-tools</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jvnet.jaxb2_commons</groupId>
+      <artifactId>jaxb2-basics</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-core</artifactId>
     </dependency>
@@ -95,10 +99,6 @@
     <!--      <groupId>com.google.elemental2</groupId>-->
     <!--      <artifactId>elemental2-core</artifactId>-->
     <!--    </dependency>-->
-    <dependency>
-      <groupId>com.google.code.javaparser</groupId>
-      <artifactId>javaparser</artifactId>
-    </dependency>
   </dependencies>
 
   <dependencyManagement>
@@ -111,6 +111,11 @@
       <dependency>
         <groupId>org.jvnet.jaxb2_commons</groupId>
         <artifactId>jaxb2-basics-tools</artifactId>
+        <version>${jaxb2-basics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.jaxb2_commons</groupId>
+        <artifactId>jaxb2-basics</artifactId>
         <version>${jaxb2-basics.version}</version>
       </dependency>
       <dependency>
@@ -180,11 +185,6 @@
       <!--        <artifactId>elemental2-core</artifactId>-->
       <!--        <version>1.0.0-beta-1</version>-->
       <!--      </dependency>-->
-      <dependency>
-        <groupId>com.google.code.javaparser</groupId>
-        <artifactId>javaparser</artifactId>
-        <version>1.0.11</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
