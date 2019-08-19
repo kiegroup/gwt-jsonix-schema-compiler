@@ -49,6 +49,10 @@
       <artifactId>jaxb2-basics-tools</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jvnet.jaxb2_commons</groupId>
+      <artifactId>jaxb2-basics</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-core</artifactId>
     </dependency>
@@ -107,6 +111,11 @@
       <dependency>
         <groupId>org.jvnet.jaxb2_commons</groupId>
         <artifactId>jaxb2-basics-tools</artifactId>
+        <version>${jaxb2-basics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.jaxb2_commons</groupId>
+        <artifactId>jaxb2-basics</artifactId>
         <version>${jaxb2-basics.version}</version>
       </dependency>
       <dependency>

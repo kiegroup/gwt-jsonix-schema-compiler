@@ -15,7 +15,6 @@
  */
 package gwt.jsonix.marshallers.xjc.plugin;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.sun.codemodel.CodeWriter;
+import com.sun.codemodel.JClass;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.tools.xjc.BadCommandLineException;
@@ -55,17 +55,12 @@ import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.writeJSInteropCode;
 public class JsonixGWTPlugin extends JsonixPlugin {
 
     public static final String OPTION_NAME = "Xgwtjsonix";
-    public static final String OPTION = "-" + OPTION_NAME;
 
     private GWTSettings settings = new GWTSettings();
 
     @Override
     public GWTSettings getSettings() {
         return settings;
-    }
-
-    public void setSettings(GWTSettings settings) {
-        this.settings = settings;
     }
 
     @Override
@@ -81,7 +76,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
 
     @Override
     public int parseArgument(Options opt, String[] args, int i)
-            throws BadCommandLineException, IOException {
+            throws BadCommandLineException {
 
         final PartialCmdLineParser cmdLineParser = new PartialCmdLineParser(
                 getSettings());
@@ -101,9 +96,9 @@ public class JsonixGWTPlugin extends JsonixPlugin {
             JCodeModel jCodeModel = new JCodeModel();
             final CodeWriter codeWriter = createCodeWriter(model, getSettings());
             Map<String, String> packageModuleMap = getPackageModuleMap(model);
-            Map<String, JDefinedClass> definedClassesMap = new HashMap<>();
+            Map<String, JClass> definedClassesMap = new HashMap<>();
             ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap);
-            List<JDefinedClass> mainObjectsList = getMainObjectsList(definedClassesMap, model.getAllElements());
+            List<JClass> mainObjectsList = getMainObjectsList(definedClassesMap, model.getAllElements());
             final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, mainObjectsList, jCodeModel);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);
             MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, jCodeModel);
@@ -120,7 +115,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         //
     }
 
-    protected List<JDefinedClass> getMainObjectsList(final Map<String, JDefinedClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
+    protected List<JClass> getMainObjectsList(final Map<String, JClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
         log(LogLevelSetting.DEBUG, "getMainObjectsList", null);
         Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
         return StreamSupport.stream(spliterator, false)
@@ -145,5 +140,4 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         ModulesConfiguration modulesConfiguration = customizationHandler.unmarshal(model, defaultOutputConfiguration, defaultJsonSchemaConfiguration);
         return modulesConfiguration.getMappingConfigurations().stream().collect(Collectors.toMap(MappingConfiguration::getPackage, MappingConfiguration::getName));
     }
-
 }

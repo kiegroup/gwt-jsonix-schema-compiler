@@ -16,6 +16,7 @@
 package gwt.jsonix.marshallers.xjc.plugin;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import com.sun.tools.xjc.model.CElement;
 import com.sun.tools.xjc.model.CElementInfo;
 import com.sun.tools.xjc.model.CElementPropertyInfo;
 import com.sun.tools.xjc.model.CEnumLeafInfo;
+import com.sun.tools.xjc.model.CPluginCustomization;
 import com.sun.tools.xjc.model.CPropertyInfo;
 import com.sun.tools.xjc.model.CReferencePropertyInfo;
 import com.sun.tools.xjc.model.Model;
@@ -48,8 +50,14 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import jsinterop.base.JsArrayLike;
 import org.hisrc.jsonix.settings.LogLevelSetting;
+import org.jvnet.jaxb2_commons.plugin.inheritance.Customizations;
+import org.jvnet.jaxb2_commons.plugin.inheritance.ExtendsClass;
+import org.jvnet.jaxb2_commons.plugin.inheritance.ExtendsClassReader;
+import org.jvnet.jaxb2_commons.plugin.inheritance.util.JavaTypeParser;
+import org.jvnet.jaxb2_commons.util.CustomizationUtils;
 
 import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
+import static org.jvnet.jaxb2_commons.plugin.inheritance.Customizations.EXTENDS_ELEMENT_NAME;
 
 /**
  * Actual builder for <b>JSInterop</b> models
@@ -70,7 +78,7 @@ public class ModelBuilder {
      * @param packageModuleMap
      * @throws Exception
      */
-    public static void generateJSInteropModels(Map<String, JDefinedClass> definedClassesMap, Model model, JCodeModel jCodeModel, Map<String, String> packageModuleMap) throws Exception {
+    public static void generateJSInteropModels(Map<String, JClass> definedClassesMap, Model model, JCodeModel jCodeModel, Map<String, String> packageModuleMap) throws Exception {
         definedClassesMap.clear();
         log(LogLevelSetting.DEBUG, "Generating JSInterop code...", null);
         for (CClassInfo cClassInfo : model.beans().values()) {
@@ -78,7 +86,7 @@ public class ModelBuilder {
         }
     }
 
-    protected static void populateJCodeModel(Map<String, JDefinedClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo, Map<String, String> packageModuleMap, Model model) throws Exception {
+    protected static void populateJCodeModel(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo, Map<String, String> packageModuleMap, Model model) throws Exception {
         log(LogLevelSetting.DEBUG, "Generating  JCode model...", null);
         if (definedClassesMap.containsKey(cClassInfo.fullName())) {
             return;
@@ -87,7 +95,18 @@ public class ModelBuilder {
         final JDefinedClass jDefinedClass;
         final JExpression namespace;
         final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
-        JDefinedClass jDefinedBaseClass = null;
+        JClass jDefinedBaseClass = null;
+
+        // Read extends customisation from JAXB Basics Inheritance plugin binding.
+        // Explicit values found by JAXB bindings are overwritten by inheritance defined in the XSD being processed.
+        final CPluginCustomization extendsClassCustomization = CustomizationUtils.findCustomization(cClassInfo, EXTENDS_ELEMENT_NAME);
+        if (Objects.nonNull(extendsClassCustomization)) {
+            final ExtendsClass extendsClass = (ExtendsClass) CustomizationUtils.unmarshall(Customizations.getContext(),
+                                                                                           extendsClassCustomization);
+            final String extendsClassName = ExtendsClassReader.getValue(extendsClass);
+            jDefinedBaseClass = parseClass(extendsClassName, toPopulate, definedClassesMap);
+        }
+
         if (basecClassInfo != null) { // This is the "extended" class
             if (!definedClassesMap.containsKey(basecClassInfo.fullName())) {
                 populateJCodeModel(definedClassesMap, toPopulate, basecClassInfo, packageModuleMap, model);
@@ -97,7 +116,7 @@ public class ModelBuilder {
         if (parent != null && definedClassesMap.containsKey(parent.fullName())) { // This is for inner classes
             int mod = JMod.PUBLIC + JMod.STATIC;
             String parentFullName = parent.fullName();
-            jDefinedClass = jDefinedBaseClass != null ? definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName)._extends(jDefinedBaseClass) : definedClassesMap.get(parentFullName)._class(mod, "JSI" + cClassInfo.shortName);
+            jDefinedClass = jDefinedBaseClass != null ? ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + cClassInfo.shortName)._extends(jDefinedBaseClass) : ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + cClassInfo.shortName);
             String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".") + 1) : parentFullName;
             namespace = JExpr.lit(parentNamespace);
         } else {
@@ -118,7 +137,7 @@ public class ModelBuilder {
         }
     }
 
-    protected static void populateJCodeModel(Map<String, JDefinedClass> definedClassesMap, JCodeModel toPopulate, CEnumLeafInfo cEnumLeafInfo) throws Exception {
+    protected static void populateJCodeModel(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, CEnumLeafInfo cEnumLeafInfo) throws Exception {
         log(LogLevelSetting.DEBUG, "Generating  JCode model...", null);
         String fullClassName = cEnumLeafInfo.parent.getOwnerPackage().name() + ".JSI" + cEnumLeafInfo.shortName;
         final JDefinedClass jDefinedClass = toPopulate._class(fullClassName, ClassType.ENUM);
@@ -159,7 +178,7 @@ public class ModelBuilder {
         jDefinedClass.direct(directString);
     }
 
-    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JDefinedClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String namespace) throws Exception {
+    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String namespace) throws Exception {
         final JClass propertyRef = getPropertyRef(jCodeModel, cPropertyInfo, jDefinedClass.fullName(), definedClassesMap, packageModuleMap, model);
         final String publicPropertyName = cPropertyInfo.getName(true);
         final String privatePropertyName = cPropertyInfo.getName(false);
@@ -167,7 +186,7 @@ public class ModelBuilder {
         addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, namespace);
     }
 
-    protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JDefinedClass> definedClassesMap, Map<String, String> packageModuleMap, Model model) throws Exception {
+    protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model) throws Exception {
         JClass typeRef = getOrCreatePropertyRef(cPropertyInfo, outerClass, definedClassesMap, jCodeModel, packageModuleMap, model);
         if (typeRef == null) {
             log(LogLevelSetting.WARN, "Failed to retrieve JClass for " + cPropertyInfo.getName() + " inside the JCodeModel", null);
@@ -186,7 +205,7 @@ public class ModelBuilder {
         }
     }
 
-    protected static JClass getOrCreatePropertyRef(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JDefinedClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model) throws Exception {
+    protected static JClass getOrCreatePropertyRef(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model) throws Exception {
         JClass toReturn;
         String originalClassName = getOriginalClassName(cPropertyInfo, outerClass, definedClassesMap);
         final Optional<JClass> javaRef = getJavaRef(originalClassName, jCodeModel);
@@ -226,7 +245,7 @@ public class ModelBuilder {
         return toReturn;
     }
 
-    protected static String getOriginalClassName(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JDefinedClass> definedClassesMap) throws Exception {
+    protected static String getOriginalClassName(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap) throws Exception {
         String fullClassName = null;
         log(LogLevelSetting.DEBUG, "getClassName...", null);
         if (cPropertyInfo instanceof CReferencePropertyInfo) {
@@ -294,5 +313,11 @@ public class ModelBuilder {
         if (!fullName.equals(Object.class.getCanonicalName())) {
             annotationUse.param("namespace", nameSpace);
         }
+    }
+
+    protected static JClass parseClass(String _class,
+                                       JCodeModel codeModel,
+                                       Map<String, JClass> definedClassesMap) {
+        return new JavaTypeParser(definedClassesMap).parseClass(_class, codeModel);
     }
 }
