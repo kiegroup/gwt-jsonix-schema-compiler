@@ -97,6 +97,8 @@ public class ModelBuilder {
         final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
         JClass jDefinedBaseClass = null;
 
+        final String nameSpace = cClassInfo.shortName;
+
         // Read extends customisation from JAXB Basics Inheritance plugin binding.
         // Explicit values found by JAXB bindings are overwritten by inheritance defined in the XSD being processed.
         final CPluginCustomization extendsClassCustomization = CustomizationUtils.findCustomization(cClassInfo, EXTENDS_ELEMENT_NAME);
@@ -113,27 +115,31 @@ public class ModelBuilder {
             }
             jDefinedBaseClass = definedClassesMap.get(basecClassInfo.fullName());
         }
-        if (parent != null && definedClassesMap.containsKey(parent.fullName())) { // This is for inner classes
+        boolean hasClassParent = (parent != null && !(parent instanceof CClassInfoParent.Package));
+        if (hasClassParent && definedClassesMap.containsKey(parent.fullName())) { // This is for inner classes
             int mod = JMod.PUBLIC + JMod.STATIC;
             String parentFullName = parent.fullName();
-            jDefinedClass = jDefinedBaseClass != null ? ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + cClassInfo.shortName)._extends(jDefinedBaseClass) : ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + cClassInfo.shortName);
+            jDefinedClass = jDefinedBaseClass != null ? ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + nameSpace)._extends(jDefinedBaseClass) : ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + nameSpace);
             String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".") + 1) : parentFullName;
             namespace = JExpr.lit(parentNamespace);
         } else {
-            String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + cClassInfo.shortName;
+            String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + nameSpace;
             jDefinedClass = jDefinedBaseClass != null ? toPopulate._class(fullClassName)._extends(jDefinedBaseClass) : toPopulate._class(fullClassName);
             namespace = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
         }
         definedClassesMap.put(cClassInfo.fullName(), jDefinedClass);
         JDocComment comment = jDefinedClass.javadoc();
-        String commentString = "JSInterop adapter for <code>" + cClassInfo.shortName + "</code>";
+        String commentString = "JSInterop adapter for <code>" + nameSpace + "</code>";
         comment.append(commentString);
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
                 .param("namespace", namespace)
-                .param("name", cClassInfo.shortName);
-        addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), cClassInfo.shortName);
+                .param("name", nameSpace);
+        addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), nameSpace);
+        if (basecClassInfo == null) {
+            addGetTypeNameProperty(toPopulate, jDefinedClass, nameSpace);
+        }
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
-            addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, cClassInfo.shortName);
+            addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace);
         }
     }
 
@@ -176,6 +182,13 @@ public class ModelBuilder {
         String fullName = moduleName + "." + originalName;
         String directString = String.format(newInstanceTemplate, jDefinedClass.name(), fullName);
         jDefinedClass.direct(directString);
+    }
+
+
+    protected static void addGetTypeNameProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String namespace) {
+        log(LogLevelSetting.DEBUG, String.format("Add getTYPENAME property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()), null);
+        JClass parameterRef = jCodeModel.ref(String.class);
+        addGetter(jCodeModel, jDefinedClass, parameterRef, "TYPE_NAME", "TYPE_NAME", namespace);
     }
 
     protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String namespace) throws Exception {
