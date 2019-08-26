@@ -93,11 +93,12 @@ public class ModelBuilder {
         }
         final CClassInfoParent parent = cClassInfo.parent();
         final JDefinedClass jDefinedClass;
-        final JExpression namespace;
+        final JExpression nameSpaceExpression;
         final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
         JClass jDefinedBaseClass = null;
 
-        final String nameSpace = cClassInfo.shortName;
+        String shortClassName = cClassInfo.shortName;
+        String nameSpace = shortClassName;
 
         // Read extends customisation from JAXB Basics Inheritance plugin binding.
         // Explicit values found by JAXB bindings are overwritten by inheritance defined in the XSD being processed.
@@ -116,25 +117,29 @@ public class ModelBuilder {
             jDefinedBaseClass = definedClassesMap.get(basecClassInfo.fullName());
         }
         boolean hasClassParent = (parent != null && !(parent instanceof CClassInfoParent.Package));
+        String parentNamespace = null;
         if (hasClassParent && definedClassesMap.containsKey(parent.fullName())) { // This is for inner classes
             int mod = JMod.PUBLIC + JMod.STATIC;
             String parentFullName = parent.fullName();
             jDefinedClass = jDefinedBaseClass != null ? ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + nameSpace)._extends(jDefinedBaseClass) : ((JDefinedClass) definedClassesMap.get(parentFullName))._class(mod, "JSI" + nameSpace);
-            String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".") + 1) : parentFullName;
-            namespace = JExpr.lit(parentNamespace);
+            parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf(".") + 1) : parentFullName;
+            nameSpaceExpression = JExpr.lit(parentNamespace);
+            nameSpace = parentNamespace + "." + nameSpace;
         } else {
             String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + nameSpace;
             jDefinedClass = jDefinedBaseClass != null ? toPopulate._class(fullClassName)._extends(jDefinedBaseClass) : toPopulate._class(fullClassName);
-            namespace = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
+            nameSpaceExpression = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
         }
         definedClassesMap.put(cClassInfo.fullName(), jDefinedClass);
         JDocComment comment = jDefinedClass.javadoc();
         String commentString = "JSInterop adapter for <code>" + nameSpace + "</code>";
         comment.append(commentString);
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
-                .param("namespace", namespace)
-                .param("name", nameSpace);
-        addNewInstance(jDefinedClass, packageModuleMap.get(jDefinedClass._package().name()), nameSpace);
+                .param("namespace", nameSpaceExpression)
+                .param("name", shortClassName);
+        String moduleName = packageModuleMap.get(jDefinedClass._package().name());
+        addNewInstance(jDefinedClass, moduleName, nameSpace);
+        addTypeName(jDefinedClass, toPopulate, moduleName, nameSpace);
         if (basecClassInfo == null) {
             addGetTypeNameProperty(toPopulate, jDefinedClass, nameSpace);
         }
@@ -182,6 +187,14 @@ public class ModelBuilder {
         String fullName = moduleName + "." + originalName;
         String directString = String.format(newInstanceTemplate, jDefinedClass.name(), fullName);
         jDefinedClass.direct(directString);
+    }
+
+    protected static void addTypeName(JDefinedClass jDefinedClass, JCodeModel jCodeModel, String moduleName, String originalName) {
+        final JClass propertyRef = getJavaRef(String.class.getCanonicalName(), jCodeModel).get();
+        String fullName = moduleName + "." + originalName;
+        int mods = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
+        final JFieldVar typeNameField = jDefinedClass.field(mods, propertyRef, "TYPE");
+        typeNameField.init(JExpr.lit(fullName));
     }
 
 
