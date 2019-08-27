@@ -18,6 +18,8 @@ package gwt.jsonix.marshallers.xjc.plugin;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -29,7 +31,6 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.tools.xjc.BadCommandLineException;
 import com.sun.tools.xjc.Options;
 import com.sun.tools.xjc.model.CElementInfo;
-import com.sun.tools.xjc.model.CNonElement;
 import com.sun.tools.xjc.model.Model;
 import com.sun.tools.xjc.outline.Outline;
 import org.hisrc.jsonix.args4j.PartialCmdLineParser;
@@ -98,8 +99,8 @@ public class JsonixGWTPlugin extends JsonixPlugin {
             Map<String, String> packageModuleMap = getPackageModuleMap(model);
             Map<String, JClass> definedClassesMap = new HashMap<>();
             ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap);
-            List<JClass> mainObjectsList = getMainObjectsList(definedClassesMap, model.getAllElements());
-            final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, mainObjectsList, jCodeModel);
+            Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
+            final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, topLevelElementsMap, jCodeModel);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);
             MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, jCodeModel);
             writeJSInteropCode(jCodeModel, codeWriter);
@@ -115,15 +116,20 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         //
     }
 
-    protected List<JClass> getMainObjectsList(final Map<String, JClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
-        log(LogLevelSetting.DEBUG, "getMainObjectsList", null);
+    protected Map<String, Map<String, JClass>> getTopLevelElementsMap(Set<String> packageNames, final Map<String, JClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
+        log(LogLevelSetting.DEBUG, "getTopLevelElementsMap", null);
         Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
-        return StreamSupport.stream(spliterator, false)
-                .map(CElementInfo::getContentType)
-                .map(CNonElement::getType)
-                .filter(type -> definedClassesMap.containsKey(type.fullName()))
-                .map(type -> definedClassesMap.get(type.fullName()))
-                .collect(Collectors.toList());
+        final List<? extends CElementInfo> allElementsList = StreamSupport.stream(spliterator, false).collect(Collectors.toList());
+        Map<String, Map<String, JClass>> toReturn = new HashMap<>();
+        for (String packageName : packageNames) {
+            Map<String, JClass> toPut = allElementsList.stream()
+                    .filter(cElementInfo -> Objects.equals(packageName, cElementInfo._package().name()))
+                    .filter(cElementInfo -> definedClassesMap.containsKey(cElementInfo.getContentType().getType().fullName()))
+                    .collect(Collectors.toMap(cElementInfo -> cElementInfo.getElementName().getLocalPart(),
+                                              cElementInfo -> definedClassesMap.get(cElementInfo.getContentType().getType().fullName())));
+            toReturn.put(packageName, toPut);
+        }
+        return toReturn;
     }
 
     protected Map<String, String> getPackageModuleMap(Model model) {
