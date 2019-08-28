@@ -149,7 +149,7 @@ public class ModelBuilder {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace);
         }
         if (cClassInfo.declaresAttributeWildcard()) {
-            addOtherAttributesProperty(toPopulate, jDefinedClass, /*definedClassesMap, packageModuleMap, model, */nameSpace);
+            addOtherAttributesProperty(toPopulate, jDefinedClass, nameSpace);
         }
     }
 
