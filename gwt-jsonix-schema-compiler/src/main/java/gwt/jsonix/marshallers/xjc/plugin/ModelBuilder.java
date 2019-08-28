@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.xml.namespace.QName;
+
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
@@ -146,6 +148,9 @@ public class ModelBuilder {
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace);
         }
+        if (cClassInfo.declaresAttributeWildcard()) {
+            addOtherAttributesProperty(toPopulate, jDefinedClass, /*definedClassesMap, packageModuleMap, model, */nameSpace);
+        }
     }
 
     protected static void populateJCodeModel(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, CEnumLeafInfo cEnumLeafInfo) throws Exception {
@@ -197,19 +202,27 @@ public class ModelBuilder {
         typeNameField.init(JExpr.lit(fullName));
     }
 
-
     protected static void addGetTypeNameProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String namespace) {
         log(LogLevelSetting.DEBUG, String.format("Add getTYPENAME property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()), null);
         JClass parameterRef = jCodeModel.ref(String.class);
         addGetter(jCodeModel, jDefinedClass, parameterRef, "TYPE_NAME", "TYPE_NAME", namespace);
     }
 
-    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String namespace) throws Exception {
+    /**
+     * Generates an attribute wildcard property on a class.
+     */
+    protected static void addOtherAttributesProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass,/* Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, */String nameSpace)  {
+        log(LogLevelSetting.DEBUG, String.format("Add getOtherAttributes property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()), null);
+        final JClass parameterRef = jCodeModel.ref(Map.class).narrow(QName.class, String.class);
+        addGetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
+    }
+
+    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String nameSpace) throws Exception {
         final JClass propertyRef = getPropertyRef(jCodeModel, cPropertyInfo, jDefinedClass.fullName(), definedClassesMap, packageModuleMap, model);
         final String publicPropertyName = cPropertyInfo.getName(true);
         final String privatePropertyName = cPropertyInfo.getName(false);
-        addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, namespace);
-        addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, namespace);
+        addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
+        addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
     }
 
     protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model) throws Exception {
@@ -232,8 +245,12 @@ public class ModelBuilder {
     }
 
     protected static JClass getOrCreatePropertyRef(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model) throws Exception {
+        String originalClassName = getOriginalClassName(cPropertyInfo, outerClass);
+        return getOrCreatePropertyRef(originalClassName, definedClassesMap, jCodeModel, packageModuleMap, model);
+    }
+
+    protected static JClass getOrCreatePropertyRef(String originalClassName, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model) throws Exception {
         JClass toReturn;
-        String originalClassName = getOriginalClassName(cPropertyInfo, outerClass, definedClassesMap);
         final Optional<JClass> javaRef = getJavaRef(originalClassName, jCodeModel);
         if (javaRef.isPresent()) {
             toReturn = javaRef.get();
@@ -271,7 +288,7 @@ public class ModelBuilder {
         return toReturn;
     }
 
-    protected static String getOriginalClassName(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap) throws Exception {
+    protected static String getOriginalClassName(CPropertyInfo cPropertyInfo, String outerClass) throws Exception {
         String fullClassName = null;
         log(LogLevelSetting.DEBUG, "getClassName...", null);
         if (cPropertyInfo instanceof CReferencePropertyInfo) {
