@@ -103,11 +103,12 @@ public class BuilderUtils {
         String setterMethodName = "set" + publicPropertyName;
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod setterMethod = jDefinedClass.method(mod, Void.TYPE, setterMethodName);
-        setterMethod.param(propertyRef, privatePropertyName);
+        String parameterName = privatePropertyName + "Param";
+        setterMethod.param(propertyRef, parameterName);
         JDocComment setterComment = setterMethod.javadoc();
         String commentString = "Setter for <b>" + privatePropertyName + "</b>";
         setterComment.append(commentString);
-        JCommentPart setterCommentParameterPart = setterComment.addParam(privatePropertyName);
+        JCommentPart setterCommentParameterPart = setterComment.addParam(parameterName);
         commentString = " <b>" + privatePropertyName + "</<b> to set.";
         setterCommentParameterPart.add(commentString);
         return setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
@@ -187,4 +188,5 @@ public class BuilderUtils {
     private static Logger getLog() {
         return LoggerFactory.getLogger(BuilderUtils.class.getName());
     }
+
 }

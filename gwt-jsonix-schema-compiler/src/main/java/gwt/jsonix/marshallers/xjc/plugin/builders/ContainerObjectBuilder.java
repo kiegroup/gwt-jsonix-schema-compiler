@@ -29,6 +29,7 @@ import jsinterop.annotations.JsType;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addGetter;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addSetter;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 
 /**
@@ -91,6 +92,6 @@ public class ContainerObjectBuilder {
     protected static void addElementProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, String elementName, JClass elementClass) {
         log(LogLevelSetting.DEBUG, String.format("Add %1$s accessors to object %2$s.%3$s ...", elementName, toPopulate._package().name(), toPopulate.name()));
         addGetter(jCodeModel, toPopulate, elementClass, elementName, elementName);
-        addGetter(jCodeModel, toPopulate, elementClass, elementName, elementName);
+        addSetter(jCodeModel, toPopulate, elementClass, elementName, elementName);
     }
 }
