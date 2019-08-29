@@ -8,7 +8,7 @@
   <artifactId>gwt-jsonix-marshallers-project</artifactId>
   <packaging>pom</packaging>
   <version>1.0b</version>
-  <name>org.kogito.App</name>
+  <name>org.kogito.gwt-jsonix-marshallers-project</name>
 
   <properties>
 
