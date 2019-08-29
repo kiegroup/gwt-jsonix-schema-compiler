@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jvnet.jaxb2_commons.plugin.inheritance;
+package gwt.jsonix.marshallers.xjc.plugin.exceptions;
 
-/**
- * This class reads the className value extracted by the inheritance customisation.
- * The default accessor is package-protected so this helper lets us access it publicly.
- */
-public class ExtendsClassReader {
+public class ParseModelException extends Exception {
 
-    private ExtendsClassReader() {
-    }
-
-    public static String getValue(final ExtendsClass extendsClass) {
-        return extendsClass.getClassName();
+    public ParseModelException(String message) {
+        super(message);
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwt.jsonix.marshallers.xjc.plugin;
+package gwt.jsonix.marshallers.xjc.plugin.builders;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JClass;
+import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
@@ -30,15 +31,18 @@ import jsinterop.annotations.JsFunction;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.CALLBACKS;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.MARSHALL_CALLBACK;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.UNMARSHALL_CALLBACK;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.CALLBACKS;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.MARSHALL_CALLBACK;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.UNMARSHALL_CALLBACK;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 
 /**
  * Actual builder for the <b>JSInterop</b> <b>callbacks</b> classes
  */
 public class CallbacksBuilder {
+
+    private CallbacksBuilder() {
+    }
 
     /**
      * Method to create the <b>JSInterop</b> <b>callbacks</b> classes
@@ -47,13 +51,13 @@ public class CallbacksBuilder {
      * @return
      * @throws Exception
      */
-    public static Map<String, Map<String, JDefinedClass>> generateJSInteropCallbacks(final List<JDefinedClass> containersClasses, JCodeModel jCodeModel) throws Exception {
-        log(LogLevelSetting.DEBUG, "Generating  JSInterop callbacks ...", null);
+    public static Map<String, Map<String, JDefinedClass>> generateJSInteropCallbacks(final List<JDefinedClass> containersClasses, JCodeModel jCodeModel) throws JClassAlreadyExistsException {
+        log(LogLevelSetting.DEBUG, "Generating  JSInterop callbacks ...");
         Map<String, Map<String, JDefinedClass>> toReturn = new HashMap<>();
         for (JDefinedClass containerClass : containersClasses) {
             String basePackage = containerClass._package().name();
             if (basePackage.contains(".")) {
-                basePackage = basePackage.substring(0, basePackage.lastIndexOf("."));
+                basePackage = basePackage.substring(0, basePackage.lastIndexOf('.'));
             }
             basePackage += "." + CALLBACKS;
             final JDefinedClass unMarshallCallback = createUnMarshallCallback(jCodeModel, containerClass, basePackage);
@@ -72,7 +76,7 @@ public class CallbacksBuilder {
      * @param basePackage
      * @throws Exception
      */
-    protected static JDefinedClass createUnMarshallCallback(JCodeModel toPopulate, JDefinedClass jDefinedClass, String basePackage) throws Exception {
+    protected static JDefinedClass createUnMarshallCallback(JCodeModel toPopulate, JDefinedClass jDefinedClass, String basePackage) throws JClassAlreadyExistsException {
         String callbackName = jDefinedClass.name() + UNMARSHALL_CALLBACK;
         String comment = "Unmarshaller callback for <code>" + jDefinedClass.name() + "</code>";
         return createCallback(toPopulate, callbackName, comment, jDefinedClass, StringUtils.uncapitalize(jDefinedClass.name()), basePackage);
@@ -85,7 +89,7 @@ public class CallbacksBuilder {
      * @return
      * @throws Exception
      */
-    protected static JDefinedClass createMarshallCallback(JCodeModel toPopulate, String containerName, String basePackage) throws Exception {
+    protected static JDefinedClass createMarshallCallback(JCodeModel toPopulate, String containerName, String basePackage) throws JClassAlreadyExistsException {
         String callbackName = containerName + MARSHALL_CALLBACK;
         String comment = "Marshaller callback for <code>" + containerName + "</code>";
         JClass parameterRef = toPopulate.ref(String.class);
@@ -102,7 +106,7 @@ public class CallbacksBuilder {
      * @throws Exception
      */
     protected static JDefinedClass createCallback(JCodeModel toPopulate, String callbackName, String commentString,
-                                                  JClass parameterRef, String parameterName, String basePackage) throws Exception {
+                                                  JClass parameterRef, String parameterName, String basePackage) throws JClassAlreadyExistsException {
         final JDefinedClass toReturn = toPopulate._class(basePackage + "." + callbackName, ClassType.INTERFACE);
         final JDocComment javadoc = toReturn.javadoc();
         javadoc.append(commentString);

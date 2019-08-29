@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwt.jsonix.marshallers.xjc.plugin;
+package gwt.jsonix.marshallers.xjc.plugin.builders;
 
 import java.util.List;
 import java.util.Map;
 
 import com.sun.codemodel.JClass;
+import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
@@ -29,14 +30,17 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.MAIN_JS;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.MARSHALL_CALLBACK;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.UNMARSHALL_CALLBACK;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.MAIN_JS;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.MARSHALL_CALLBACK;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.UNMARSHALL_CALLBACK;
 
 /**
  * Actual builder for the <b>JSInterop</b> <code>MainJs</code> class
  */
 public class MainJsBuilder {
+
+    private MainJsBuilder() {
+    }
 
     /**
      * Method to create the <b>JSInterop</b> <code>MainJs</code> class
@@ -45,16 +49,16 @@ public class MainJsBuilder {
      * @param jCodeModel
      * @throws Exception
      */
-    public static void generateJSInteropMainJs(final Map<String, Map<String, JDefinedClass>> callbacksMap, List<JDefinedClass> containersClasses, JCodeModel jCodeModel) throws Exception {
+    public static void generateJSInteropMainJs(final Map<String, Map<String, JDefinedClass>> callbacksMap, List<JDefinedClass> containersClasses, JCodeModel jCodeModel) throws JClassAlreadyExistsException {
         for (JDefinedClass mainObject : containersClasses) {
             populateJCodeModel(jCodeModel, mainObject, callbacksMap.get(mainObject.name()));
         }
     }
 
-    protected static void populateJCodeModel(JCodeModel toPopulate, JClass containerRef, Map<String, JDefinedClass> callbackMap) throws Exception {
+    protected static void populateJCodeModel(JCodeModel toPopulate, JClass containerRef, Map<String, JDefinedClass> callbackMap) throws JClassAlreadyExistsException {
         String basePackage = containerRef._package().name();
         if (basePackage.contains(".")) {
-            basePackage = basePackage.substring(0, basePackage.lastIndexOf("."));
+            basePackage = basePackage.substring(0, basePackage.lastIndexOf('.'));
         }
         String fullMainJsName = basePackage + "." + MAIN_JS;
         JDefinedClass jDefinedClass = toPopulate._getClass(fullMainJsName);
