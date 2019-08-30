@@ -77,8 +77,24 @@ public class ModelBuilder {
             "       return instance.TYPE_NAME != null && instance.TYPE_NAME === \"%1$s\"\n" +
             "    }-*/;\n";
 
-    protected static final String GET_DIAGRAM_ELEMENT_TEMPLATE = "\n\n\n\npublic static native %1$s get%2$s(%3$s instance) /*-{\n" +
-            "        return @%4$s.JsUtils::getUnwrappedElementsArray(*)(instance.%5$s)\n" +
+    protected static final String GET_JSARRAY_TEMPLATE = "\n\n\n\npublic static native %1$s get%2$s(%3$s instance) /*-{\n" +
+            "        return @%4$s.JsUtils::getUnwrappedElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
+            "    }-*/;\n";
+
+    protected static final String ADD_JSARRAY_TEMPLATE = "\n\n\n\npublic static native void add%1$s(%2$s instance, %3$s toAdd) /*-{\n" +
+            "        return @%4$s.JsUtils::add(Ljsinterop/base/JsArrayLike;Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
+            "    }-*/;\n";
+
+    protected static final String ADDALL_JSARRAY_TEMPLATE = "\n\n\n\npublic static native void addAll%1$s(%2$s instance, JsArrayLike<%3$s> toAdd) /*-{\n" +
+            "        return @%4$s.JsUtils::addAll(Ljsinterop/base/JsArrayLike;[Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
+            "    }-*/;\n";
+
+    protected static final String REMOVE_JSARRAY_TEMPLATE = "\n\n\n\npublic static native void remove%1$s(%2$s instance, int index) /*-{\n" +
+            "        return @%3$s.JsUtils::remove(Ljsinterop/base/JsArrayLike;I)(instance.%4$s, index)\n" +
+            "    }-*/;\n";
+
+    protected static final String GET_OTHER_ATTRIBUTES_TEMPLATE = "\n\n\n\npublic static native Map<QName, String> getOtherAttributesMap(final %1$s instance) /*-{\n" +
+            "        return @%2$s.JsUtils::toAttributesMap(Ljava/lang/Object;)(instance.otherAttributes)\n" +
             "    }-*/;\n";
 
     private ModelBuilder() {
@@ -154,7 +170,7 @@ public class ModelBuilder {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace, packageName);
         }
         if (cClassInfo.declaresAttributeWildcard()) {
-            addOtherAttributesProperty(toPopulate, jDefinedClass, nameSpace);
+            addOtherAttributesProperty(toPopulate, jDefinedClass, nameSpace, packageName);
         }
     }
 
@@ -233,8 +249,26 @@ public class ModelBuilder {
     }
 
     protected static void addStaticJsArrayGetter(JDefinedClass jDefinedClass, String jsArrayType, String specificGetNamePart, String propertyName, String packageName) {
-        log(LogLevelSetting.DEBUG, String.format("Add get%1$s property to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(GET_DIAGRAM_ELEMENT_TEMPLATE, jsArrayType, specificGetNamePart, jDefinedClass.name(), packageName, propertyName);
+        log(LogLevelSetting.DEBUG, String.format("Add get%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
+        String directString = String.format(GET_JSARRAY_TEMPLATE, jsArrayType, specificGetNamePart, jDefinedClass.name(), packageName, propertyName);
+        jDefinedClass.direct(directString);
+    }
+
+    protected static void addStaticJsArrayAdd(JDefinedClass jDefinedClass, String toAddType, String specificGetNamePart, String propertyName, String packageName) {
+        log(LogLevelSetting.DEBUG, String.format("Add add%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
+        String directString = String.format(ADD_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName);
+        jDefinedClass.direct(directString);
+    }
+
+    protected static void addStaticJsArrayAddAll(JDefinedClass jDefinedClass, String toAddType, String specificGetNamePart, String propertyName, String packageName) {
+        log(LogLevelSetting.DEBUG, String.format("Add addAll%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
+        String directString = String.format(ADDALL_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName);
+        jDefinedClass.direct(directString);
+    }
+
+    protected static void addStaticJsArrayRemove(JDefinedClass jDefinedClass, String specificGetNamePart, String propertyName, String packageName) {
+        log(LogLevelSetting.DEBUG, String.format("Add remove%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
+        String directString = String.format(REMOVE_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), packageName, propertyName);
         jDefinedClass.direct(directString);
     }
 
@@ -250,19 +284,32 @@ public class ModelBuilder {
         final String privatePropertyName = cPropertyInfo.getName(false);
         addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
         addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
-        if (cPropertyInfo.isCollection()) {
+        if (cPropertyInfo.isCollection() && propertyRef.getTypeParameters() != null && propertyRef.getTypeParameters().size() > 0) {
+            final JClass typeParameter = propertyRef.getTypeParameters().get(0);
+            String propertyType = typeParameter.name();
+            String jniReferenceType = "L" + typeParameter.binaryName().replace(".", "/") + ";";
             addStaticJsArrayGetter(jDefinedClass, propertyRef.name(), publicPropertyName, privatePropertyName, packageName);
+            addStaticJsArrayAdd(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
+            addStaticJsArrayAddAll(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
+            addStaticJsArrayRemove(jDefinedClass, publicPropertyName, privatePropertyName, packageName);
         }
     }
 
     /**
      * Generates an attribute wildcard property on a class.
      */
-    protected static void addOtherAttributesProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String nameSpace) {
+    protected static void addOtherAttributesProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String nameSpace, String packageName) {
         log(LogLevelSetting.DEBUG, String.format("Add getOtherAttributes property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
         final JClass parameterRef = jCodeModel.ref(Map.class).narrow(QName.class, String.class);
         addGetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
         addSetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
+        addStaticOtherAttributesGetter(jDefinedClass, packageName);
+    }
+
+    protected static void addStaticOtherAttributesGetter(JDefinedClass jDefinedClass, String packageName) {
+        log(LogLevelSetting.DEBUG, String.format("Add getOtherAttributesMap method to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
+        String directString = String.format(GET_OTHER_ATTRIBUTES_TEMPLATE, jDefinedClass.name(), packageName);
+        jDefinedClass.direct(directString);
     }
 
     protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String packageName) throws ParseModelException, JClassAlreadyExistsException {
