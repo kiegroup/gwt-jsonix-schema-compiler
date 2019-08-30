@@ -109,7 +109,7 @@ public class BuilderUtils {
         String commentString = "Setter for <b>" + privatePropertyName + "</b>";
         setterComment.append(commentString);
         JCommentPart setterCommentParameterPart = setterComment.addParam(parameterName);
-        commentString = " <b>" + privatePropertyName + "</<b> to set.";
+        commentString = " <b>" + privatePropertyName + "</b> to set.";
         setterCommentParameterPart.add(commentString);
         return setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
     }

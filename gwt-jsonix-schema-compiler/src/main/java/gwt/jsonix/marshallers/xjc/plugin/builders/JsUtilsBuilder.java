@@ -16,13 +16,18 @@
 package gwt.jsonix.marshallers.xjc.plugin.builders;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import javax.xml.namespace.QName;
 
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JCommentPart;
 import com.sun.codemodel.JConditional;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
@@ -46,6 +51,7 @@ public class JsUtilsBuilder {
     private static final String ELEMENT = "element";
     private static final int PUBLIC_STATIC_MODS = JMod.PUBLIC + JMod.STATIC;
     private static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
+    private static final int PRIVATE_STATIC_MODS = JMod.PRIVATE + JMod.STATIC;
 
     private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\npublic static native <D> JsArrayLike<D> getUnwrappedElementsArray(final JsArrayLike<D> original) /*-{\n" +
             "        var toReturn = original.map(function (arrayItem) {\n" +
@@ -62,6 +68,16 @@ public class JsUtilsBuilder {
             "        var toSet = toReturn == null ? original : toReturn;\n" +
             "        console.log(toSet);\n" +
             "        return toSet;\n" +
+            "    }-*/;\n";
+
+    private static final String TO_ATTRIBUTES_MAP_METHOD = "\r\nprivate static native void toAttributesMap(final Map<QName, String> toReturn,\n" +
+            "                                               final Object original) /*-{\n" +
+            "        var keys = Object.keys(original);\n" +
+            "        for (var i = 0; i < keys.length; i++) {\n" +
+            "            var key = keys[i];\n" +
+            "            var value = original[key];\n" +
+            "            @JsUtils::put(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
+            "        }\n" +
             "    }-*/;\n";
 
     private JsUtilsBuilder() {
@@ -81,6 +97,9 @@ public class JsUtilsBuilder {
         addToListMethod(jCodeModel, toPopulate);
         addGetUnwrappedElementsArrayMethod(toPopulate);
         addGetUnwrappedElementMethod(toPopulate);
+        addJavaToAttributesMapMethod(jCodeModel, toPopulate);
+        addNativeToAttributesMapMethod(toPopulate);
+        addPutToAttributesMap(jCodeModel, toPopulate);
     }
 
     protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel) throws JClassAlreadyExistsException {
@@ -178,6 +197,66 @@ public class JsUtilsBuilder {
         jsUtils.direct(GET_UNWRAPPED_ELEMENT_METHOD);
     }
 
+    /**
+     * @param jCodeModel
+     * @param jsUtils
+     * @return
+     */
+    protected static JMethod addJavaToAttributesMapMethod(JCodeModel jCodeModel, JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add java 'toAttributesMap' method...");
+        final JClass qName = jCodeModel.ref(QName.class);
+        JClass narrowedMap = getQNameStringNarrowedMapClass(jCodeModel);
+        JClass rawHashMapClass = jCodeModel.ref(HashMap.class);
+        JClass hashMapField = rawHashMapClass.narrow(qName, jCodeModel.ref(String.class));
+        final JMethod toReturn = getJMethod(jsUtils, narrowedMap, "toAttributesMap");
+        final JVar originalParameter = toReturn.param(JMod.FINAL, jCodeModel.ref(Object.class), "original");
+        final JBlock block = toReturn.body();
+        final JVar mapToReturn = block.decl(JMod.FINAL, narrowedMap, "toReturn", JExpr._new(hashMapField));
+        block.invoke("toAttributesMap").arg(mapToReturn).arg(originalParameter);
+        block._return(mapToReturn);
+        final JDocComment javadoc = toReturn.javadoc();
+        String commentString = "Extracts the <b>otherAttributes</b> property from a JavaScriptObject to a <i>regular</i> Java Map.";
+        javadoc.append(commentString);
+        JCommentPart setterPart = javadoc.addParam("original");
+        commentString = " <b>js object</b> to transform.";
+        setterPart.add(commentString);
+        JCommentPart returnPart = javadoc.addReturn();
+        commentString = "the populated <code>Map&lt;QName, String&gt;</code>";
+        returnPart.add(commentString);
+        return toReturn;
+    }
+
+    protected static JMethod addPutToAttributesMap(JCodeModel jCodeModel, JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add 'putToAttributesMap' method...");
+        final JClass qName = jCodeModel.ref(QName.class);
+        JClass narrowedMap = getQNameStringNarrowedMapClass(jCodeModel);
+        final JMethod toReturn = jsUtils.method(PRIVATE_STATIC_MODS, Void.TYPE, "putToAttributesMap");
+        final JVar mapParameter = toReturn.param(JMod.FINAL, narrowedMap, "destination");
+        final JVar qNameAsStringParameter = toReturn.param(JMod.FINAL, jCodeModel.ref(String.class), "qNameAsString");
+        final JVar valueParameter = toReturn.param(JMod.FINAL, jCodeModel.ref(String.class), "value");
+        final JBlock block = toReturn.body();
+        block.add(mapParameter.invoke("put").arg(qName.staticInvoke("valueOf").arg(qNameAsStringParameter)).arg(valueParameter));
+        final JDocComment javadoc = toReturn.javadoc();
+        String commentString = "Create a <code>QName</code> instance from the given <b>qNameAsString</b>, and the use it as key for a new entry on <b>destination</b> Map.";
+        javadoc.append(commentString);
+        JCommentPart setterPart = javadoc.addParam("destination");
+        commentString = " the <code>Map</code> to populate.";
+        setterPart.add(commentString);
+        setterPart = javadoc.addParam("qNameAsString");
+        commentString = " the <code>String</code> to transform to <code>QName</code> instance used as key.";
+        setterPart.add(commentString);
+        setterPart = javadoc.addParam("value");
+        commentString = " the <b>value</b> to be used in the new entry.";
+        setterPart.add(commentString);
+        return toReturn;
+    }
+
+    protected static void addNativeToAttributesMapMethod(JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add native 'toAttributesMap' method...");
+        jsUtils.direct(TO_ATTRIBUTES_MAP_METHOD);
+    }
+
+
     private static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
         JMethod toReturn = getJMethod(jsUtils, returnType, methodName);
         toReturn.generify(GENERIC_TYPE_NAME);
@@ -229,5 +308,11 @@ public class JsUtilsBuilder {
     private static JClass getJsArrayNarrowedClass(JCodeModel jCodeModel) {
         JClass jsArrayLikeClass = jCodeModel.ref(JsArrayLike.class);
         return jsArrayLikeClass.narrow(getGenericT(jCodeModel));
+    }
+
+    private static JClass getQNameStringNarrowedMapClass(JCodeModel jCodeModel){
+        JClass rawMapClass = jCodeModel.ref(Map.class);
+        final JClass qName = jCodeModel.ref(QName.class);
+        return rawMapClass.narrow(qName, jCodeModel.ref(String.class));
     }
 }
