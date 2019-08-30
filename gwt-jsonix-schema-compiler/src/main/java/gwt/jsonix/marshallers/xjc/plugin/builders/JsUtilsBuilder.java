@@ -76,7 +76,7 @@ public class JsUtilsBuilder {
             "        for (var i = 0; i < keys.length; i++) {\n" +
             "            var key = keys[i];\n" +
             "            var value = original[key];\n" +
-            "            @JsUtils::put(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
+            "            @JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
             "        }\n" +
             "    }-*/;\n";
 

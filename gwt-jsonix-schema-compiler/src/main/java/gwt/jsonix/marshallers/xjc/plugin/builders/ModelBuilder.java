@@ -71,7 +71,15 @@ public class ModelBuilder {
             "        var json = \"{\\\"TYPE_NAME\\\": \\\"%2$s\\\"}\";\n" +
             "        var retrieved = JSON.parse(json)\n" +
             "        return retrieved\n" +
-            "    }-*/;";
+            "    }-*/;\n";
+
+    protected static final String INSTANCE_OF_TEMPLATE = "\n\n\n\npublic static native boolean instanceOf(Object instance) /*-{\n" +
+            "       return instance.TYPE_NAME != null && instance.TYPE_NAME === \"%1$s\"\n" +
+            "    }-*/;\n";
+
+    protected static final String GET_DIAGRAM_ELEMENT_TEMPLATE = "\n\n\n\npublic static native %1$s get%2$s(%3$s instance) /*-{\n" +
+            "        return @JsUtils::getUnwrappedElementsArray(*)(instance.%4$s)\n" +
+            "    }-*/;\n";
 
     private ModelBuilder() {
     }
@@ -137,6 +145,7 @@ public class ModelBuilder {
                 .param("name", shortClassName);
         String moduleName = packageModuleMap.get(jDefinedClass._package().name());
         addNewInstance(jDefinedClass, moduleName, nameSpace);
+        addInstanceOf(jDefinedClass, moduleName, nameSpace);
         addTypeName(jDefinedClass, toPopulate, moduleName, nameSpace);
         if (basecClassInfo == null) {
             addGetTypeNameProperty(toPopulate, jDefinedClass, nameSpace);
@@ -209,12 +218,23 @@ public class ModelBuilder {
         jDefinedClass.direct(directString);
     }
 
+    protected static void addInstanceOf(JDefinedClass jDefinedClass, String moduleName, String originalName) {
+        String fullName = moduleName + "." + originalName;
+        String directString = String.format(INSTANCE_OF_TEMPLATE, fullName);
+        jDefinedClass.direct(directString);
+    }
+
     protected static void addTypeName(JDefinedClass jDefinedClass, JCodeModel jCodeModel, String moduleName, String originalName) {
         final JClass propertyRef = getJavaRef(String.class.getCanonicalName(), jCodeModel).get();
         String fullName = moduleName + "." + originalName;
         int mods = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
         final JFieldVar typeNameField = jDefinedClass.field(mods, propertyRef, "TYPE");
         typeNameField.init(JExpr.lit(fullName));
+    }
+
+    protected static void addStaticJsArrayGetter(JDefinedClass jDefinedClass, String jsArrayType, String specificGetNamePart, String propertyName) {
+        String directString = String.format(GET_DIAGRAM_ELEMENT_TEMPLATE, jsArrayType, specificGetNamePart, jDefinedClass.name(), propertyName);
+        jDefinedClass.direct(directString);
     }
 
     protected static void addGetTypeNameProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String namespace) {
@@ -239,6 +259,9 @@ public class ModelBuilder {
         final String privatePropertyName = cPropertyInfo.getName(false);
         addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
         addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
+        if (cPropertyInfo.isCollection()) {
+            addStaticJsArrayGetter(jDefinedClass, propertyRef.name(), publicPropertyName, privatePropertyName);
+        }
     }
 
     protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model) throws ParseModelException, JClassAlreadyExistsException {
