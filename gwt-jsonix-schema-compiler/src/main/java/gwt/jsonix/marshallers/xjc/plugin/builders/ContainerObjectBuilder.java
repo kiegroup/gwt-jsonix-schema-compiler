@@ -26,6 +26,7 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
+import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addGetter;
@@ -91,7 +92,8 @@ public class ContainerObjectBuilder {
 
     protected static void addElementProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, String elementName, JClass elementClass) {
         log(LogLevelSetting.DEBUG, String.format("Add %1$s accessors to object %2$s.%3$s ...", elementName, toPopulate._package().name(), toPopulate.name()));
-        addGetter(jCodeModel, toPopulate, elementClass, elementName, elementName);
-        addSetter(jCodeModel, toPopulate, elementClass, elementName, elementName);
+        String publicName = StringUtils.capitalize(elementName);
+        addGetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
+        addSetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
     }
 }
