@@ -76,7 +76,7 @@ public class JsUtilsBuilder {
             "        for (var i = 0; i < keys.length; i++) {\n" +
             "            var key = keys[i];\n" +
             "            var value = original[key];\n" +
-            "            @JsUtils::put(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
+            "            @JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
             "        }\n" +
             "    }-*/;\n";
 
@@ -104,7 +104,7 @@ public class JsUtilsBuilder {
 
     protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel) throws JClassAlreadyExistsException {
         log(LogLevelSetting.DEBUG, "Creating  JsUtils class");
-        final JDefinedClass toReturn = jCodeModel._class("JsUtils");
+        final JDefinedClass toReturn = jCodeModel._class("gwt.jsonix.marshallers.xjc.plugin.JsUtils");
         JDocComment comment = toReturn.javadoc();
         comment.append("Utility class to provide generic methods used by all specific JSInterop classes");
         return toReturn;
