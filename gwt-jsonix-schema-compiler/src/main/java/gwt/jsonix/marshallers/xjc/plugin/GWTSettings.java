@@ -24,13 +24,23 @@ public class GWTSettings extends Settings {
 
     private File jsinteropDirectory;
 
+    private String jsMainPackage = "";
+
     public File getJsinteropDirectory() {
         return jsinteropDirectory;
     }
 
-    @Option(name = "-jsid", aliases = { "-XjsinteropDirectory" })
+    public String getJsMainPackage() {
+        return jsMainPackage;
+    }
+
+    @Option(name = "-jsid", aliases = {"-XjsinteropDirectory"})
     public void setJsinteropDirectory(File jsinteropDirectory) {
         this.jsinteropDirectory = jsinteropDirectory;
     }
 
+    @Option(name = "-jsmpkg", aliases = {"-XjsMainPackage"})
+    public void setJsMainPackage(String jsMainPackage) {
+        this.jsMainPackage = jsMainPackage;
+    }
 }

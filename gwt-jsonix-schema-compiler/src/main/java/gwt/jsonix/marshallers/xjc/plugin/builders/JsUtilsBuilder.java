@@ -32,7 +32,6 @@ import com.sun.codemodel.JConditional;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JForEach;
 import com.sun.codemodel.JForLoop;
 import com.sun.codemodel.JInvocation;
@@ -76,20 +75,20 @@ public class JsUtilsBuilder {
             "        for (var i = 0; i < keys.length; i++) {\n" +
             "            var key = keys[i];\n" +
             "            var value = original[key];\n" +
-            "            @JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
+            "            @%1$s.JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
             "        }\n" +
             "    }-*/;\n";
 
     private JsUtilsBuilder() {
     }
 
-    public static JDefinedClass generateJsUtilsClass(JCodeModel jCodeModel) throws JClassAlreadyExistsException {
-        final JDefinedClass toReturn = getJsUtilsClass(jCodeModel);
-        populateJsUtilClass(jCodeModel, toReturn);
+    public static JDefinedClass generateJsUtilsClass(JCodeModel jCodeModel, String jsMainPackage) throws JClassAlreadyExistsException {
+        final JDefinedClass toReturn = getJsUtilsClass(jCodeModel, jsMainPackage);
+        populateJsUtilClass(jCodeModel, toReturn, jsMainPackage);
         return toReturn;
     }
 
-    protected static void populateJsUtilClass(JCodeModel jCodeModel, JDefinedClass toPopulate) {
+    protected static void populateJsUtilClass(JCodeModel jCodeModel, JDefinedClass toPopulate, String jsMainPackage) {
         addEmptyConstructor(toPopulate);
         JMethod addMethod = addAddMethod(jCodeModel, toPopulate);
         addAddAllMethod(jCodeModel, toPopulate, addMethod);
@@ -98,13 +97,16 @@ public class JsUtilsBuilder {
         addGetUnwrappedElementsArrayMethod(toPopulate);
         addGetUnwrappedElementMethod(toPopulate);
         addJavaToAttributesMapMethod(jCodeModel, toPopulate);
-        addNativeToAttributesMapMethod(toPopulate);
+        addNativeToAttributesMapMethod(toPopulate, jsMainPackage);
         addPutToAttributesMap(jCodeModel, toPopulate);
     }
 
-    protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel) throws JClassAlreadyExistsException {
+    protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel, String jsMainPackage) throws JClassAlreadyExistsException {
         log(LogLevelSetting.DEBUG, "Creating  JsUtils class");
-        final JDefinedClass toReturn = jCodeModel._class("gwt.jsonix.marshallers.xjc.plugin.JsUtils");
+        if (!jsMainPackage.isEmpty() && !jsMainPackage.endsWith(".")) {
+            jsMainPackage += ".";
+        }
+        final JDefinedClass toReturn = jCodeModel._class(jsMainPackage + "JsUtils");
         JDocComment comment = toReturn.javadoc();
         comment.append("Utility class to provide generic methods used by all specific JSInterop classes");
         return toReturn;
@@ -251,9 +253,9 @@ public class JsUtilsBuilder {
         return toReturn;
     }
 
-    protected static void addNativeToAttributesMapMethod(JDefinedClass jsUtils) {
+    protected static void addNativeToAttributesMapMethod(JDefinedClass jsUtils, String jsMainPackage) {
         log(LogLevelSetting.DEBUG, "Add native 'toAttributesMap' method...");
-        jsUtils.direct(TO_ATTRIBUTES_MAP_METHOD);
+        jsUtils.direct(String.format(TO_ATTRIBUTES_MAP_METHOD, jsMainPackage));
     }
 
 

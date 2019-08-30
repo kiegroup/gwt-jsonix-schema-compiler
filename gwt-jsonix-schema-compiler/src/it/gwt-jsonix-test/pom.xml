@@ -57,6 +57,7 @@
                 <arg>-Xgwtjsonix</arg>
                 <arg>-Xinheritance</arg>
                 <arg>-jsid=${project.build.sourceDirectory}</arg>
+                <arg>-jsmpkg=org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper</arg>
               </args>
               <plugins>
                 <plugin>
