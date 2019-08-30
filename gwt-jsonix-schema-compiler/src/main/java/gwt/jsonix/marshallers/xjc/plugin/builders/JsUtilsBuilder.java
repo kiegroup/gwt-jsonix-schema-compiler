@@ -104,7 +104,7 @@ public class JsUtilsBuilder {
 
     protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel) throws JClassAlreadyExistsException {
         log(LogLevelSetting.DEBUG, "Creating  JsUtils class");
-        final JDefinedClass toReturn = jCodeModel._class("JsUtils");
+        final JDefinedClass toReturn = jCodeModel._class("gwt.jsonix.marshallers.xjc.plugin.JsUtils");
         JDocComment comment = toReturn.javadoc();
         comment.append("Utility class to provide generic methods used by all specific JSInterop classes");
         return toReturn;
