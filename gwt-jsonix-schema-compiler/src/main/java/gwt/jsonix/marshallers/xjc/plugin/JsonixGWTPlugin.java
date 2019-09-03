@@ -33,6 +33,11 @@ import com.sun.tools.xjc.Options;
 import com.sun.tools.xjc.model.CElementInfo;
 import com.sun.tools.xjc.model.Model;
 import com.sun.tools.xjc.outline.Outline;
+import gwt.jsonix.marshallers.xjc.plugin.builders.CallbacksBuilder;
+import gwt.jsonix.marshallers.xjc.plugin.builders.ContainerObjectBuilder;
+import gwt.jsonix.marshallers.xjc.plugin.builders.JsUtilsBuilder;
+import gwt.jsonix.marshallers.xjc.plugin.builders.MainJsBuilder;
+import gwt.jsonix.marshallers.xjc.plugin.builders.ModelBuilder;
 import org.hisrc.jsonix.args4j.PartialCmdLineParser;
 import org.hisrc.jsonix.configuration.JsonSchemaConfiguration;
 import org.hisrc.jsonix.configuration.MappingConfiguration;
@@ -46,9 +51,9 @@ import org.kohsuke.args4j.CmdLineException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.createCodeWriter;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.writeJSInteropCode;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.createCodeWriter;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.writeJSInteropCode;
 
 /**
  * Wrapper class of the original <code>JsonixPlugin</code> that also generates <b>JSInterop</b> code
@@ -91,14 +96,15 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     @Override
     public boolean run(Outline outline, Options opt, ErrorHandler errorHandler) throws SAXException {
         super.run(outline, opt, errorHandler);
-        log(LogLevelSetting.DEBUG, "run", null);
+        log(LogLevelSetting.DEBUG, "run");
         try {
             Model model = outline.getModel();
             JCodeModel jCodeModel = new JCodeModel();
             final CodeWriter codeWriter = createCodeWriter(model, getSettings());
+            final JDefinedClass jsUtilsClass = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, settings.getJsMainPackage());
             Map<String, String> packageModuleMap = getPackageModuleMap(model);
             Map<String, JClass> definedClassesMap = new HashMap<>();
-            ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap);
+            ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap, jsUtilsClass._package().name());
             Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
             final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, topLevelElementsMap, jCodeModel);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);
@@ -117,7 +123,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     protected Map<String, Map<String, JClass>> getTopLevelElementsMap(Set<String> packageNames, final Map<String, JClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
-        log(LogLevelSetting.DEBUG, "getTopLevelElementsMap", null);
+        log(LogLevelSetting.DEBUG, "getTopLevelElementsMap");
         Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
         final List<? extends CElementInfo> allElementsList = StreamSupport.stream(spliterator, false).collect(Collectors.toList());
         Map<String, Map<String, JClass>> toReturn = new HashMap<>();
@@ -133,13 +139,13 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     protected Map<String, String> getPackageModuleMap(Model model) {
-        log(LogLevelSetting.DEBUG, "getPackageModuleMap", null);
-        GWTSettings settings = getSettings();
+        log(LogLevelSetting.DEBUG, "getPackageModuleMap");
+        GWTSettings gwtSettings = getSettings();
         final DefaultJsonixContext context = new DefaultJsonixContext();
         final OutputConfiguration defaultOutputConfiguration = new OutputConfiguration(
-                settings.getDefaultNaming().getName(),
+                gwtSettings.getDefaultNaming().getName(),
                 OutputConfiguration.STANDARD_FILE_NAME_PATTERN);
-        final JsonSchemaConfiguration defaultJsonSchemaConfiguration = settings
+        final JsonSchemaConfiguration defaultJsonSchemaConfiguration = gwtSettings
                 .isGenerateJsonSchema() ? new JsonSchemaConfiguration(
                 JsonSchemaConfiguration.STANDARD_FILE_NAME_PATTERN) : null;
         final ModulesConfigurationUnmarshaller customizationHandler = new ModulesConfigurationUnmarshaller(context);

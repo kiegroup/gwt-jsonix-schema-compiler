@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.kogito</groupId>
+  <artifactId>gwt-jsonix-test</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <version.jaxb2-basics>0.12.0</version.jaxb2-basics>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.kogito</groupId>
+        <artifactId>gwt-jsonix-schema-compiler</artifactId>
+        <version>@project.version@</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.jaxb2_commons</groupId>
+        <artifactId>jaxb2-basics</artifactId>
+        <version>${version.jaxb2-basics}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <defaultGoal>package</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.jvnet.jaxb2.maven2</groupId>
+        <artifactId>maven-jaxb2-plugin</artifactId>
+        <executions>
+          <!--          <execution>-->
+          <!--            <id>print</id>-->
+          <!--            <phase>install</phase>-->
+          <!--            <goals>-->
+          <!--              <goal>print</goal>-->
+          <!--            </goals>-->
+          <!--          </execution>-->
+          <execution>
+            <id>generate-javascript</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <extension>true</extension>
+              <addCompileSourceRoot>false</addCompileSourceRoot>
+              <debug>false</debug>
+              <verbose>false</verbose>
+              <args>
+                <arg>-Xgwtjsonix</arg>
+                <arg>-Xinheritance</arg>
+                <arg>-jsid=${project.build.sourceDirectory}</arg>
+                <arg>-jsmpkg=org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper</arg>
+              </args>
+              <plugins>
+                <plugin>
+                  <groupId>org.kogito</groupId>
+                  <artifactId>gwt-jsonix-schema-compiler</artifactId>
+                </plugin>
+                <plugin>
+                  <groupId>org.jvnet.jaxb2_commons</groupId>
+                  <artifactId>jaxb2-basics</artifactId>
+                </plugin>
+              </plugins>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

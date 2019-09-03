@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gwt.jsonix.marshallers.xjc.plugin;
+package gwt.jsonix.marshallers.xjc.plugin.builders;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,20 +24,22 @@ import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
 import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addGetter;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 
 /**
  * Actual builder for the <b>JSInterop</b> <code>container</code> class that will be used by <b>marshaller</b> callback
  */
 public class ContainerObjectBuilder {
+
+    private ContainerObjectBuilder() {
+    }
 
     /**
      * Method to create the <b>JSInterop</b> <code>MainJs</code> class
@@ -47,8 +49,8 @@ public class ContainerObjectBuilder {
      * @return
      * @throws Exception
      */
-    public static List<JDefinedClass> generateJSInteropContainerObjects(final Map<String, String> packageModuleMap, final Map<String, Map<String, JClass>> topLevelElementsMap, JCodeModel jCodeModel) throws Exception {
-        log(LogLevelSetting.DEBUG, "Generating  JSInterop containers objects ...", null);
+    public static List<JDefinedClass> generateJSInteropContainerObjects(final Map<String, String> packageModuleMap, final Map<String, Map<String, JClass>> topLevelElementsMap, JCodeModel jCodeModel) throws JClassAlreadyExistsException {
+        log(LogLevelSetting.DEBUG, "Generating  JSInterop containers objects ...");
         List<JDefinedClass> toReturn = new ArrayList<>();
         for (Map.Entry<String, String> entry : packageModuleMap.entrySet()) {
             addPackageContainerObject(entry.getKey(), entry.getValue(), jCodeModel, topLevelElementsMap.get(entry.getKey()), toReturn);
@@ -57,7 +59,7 @@ public class ContainerObjectBuilder {
     }
 
     protected static void addPackageContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, final Map<String, JClass> topLevelElementsMap, List<JDefinedClass> toPopulate) throws JClassAlreadyExistsException {
-        log(LogLevelSetting.DEBUG, String.format("Looking for JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
+        log(LogLevelSetting.DEBUG, String.format("Looking for JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName));
         toPopulate.add(getContainerObject(packageName, containerObjectName, jCodeModel, topLevelElementsMap));
     }
 
@@ -70,7 +72,7 @@ public class ContainerObjectBuilder {
      * @throws JClassAlreadyExistsException
      */
     protected static JDefinedClass getContainerObject(String packageName, String containerObjectName, JCodeModel jCodeModel, final Map<String, JClass> topLevelElementsMap) throws JClassAlreadyExistsException {
-        log(LogLevelSetting.DEBUG, String.format("Creating  JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName), null);
+        log(LogLevelSetting.DEBUG, String.format("Creating  JSInterop container object %1$s for package %2$s ...", containerObjectName, packageName));
         final JDefinedClass toReturn = jCodeModel._class(packageName + "." + containerObjectName);
         toReturn.annotate(jCodeModel.ref(JsType.class)).param("isNative", true).param("namespace", jCodeModel.ref(JsPackage.class).staticRef("GLOBAL"));
         JDocComment comment = toReturn.javadoc();
@@ -83,31 +85,15 @@ public class ContainerObjectBuilder {
     }
 
     protected static void addNameProperty(JCodeModel jCodeModel, JDefinedClass toPopulate) {
-        log(LogLevelSetting.DEBUG, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
+        log(LogLevelSetting.DEBUG, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()));
         JClass parameterRef = jCodeModel.ref(String.class);
-        addGetterProperty(jCodeModel, toPopulate, parameterRef, "name");
+        addGetter(jCodeModel, toPopulate, parameterRef, "name", "name");
     }
 
     protected static void addElementProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, String elementName, JClass elementClass) {
-        log(LogLevelSetting.DEBUG, String.format("Add getValue property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()), null);
-        addGetterProperty(jCodeModel, toPopulate, elementClass, elementName);
-        addSetterProperty(jCodeModel, toPopulate, elementClass, elementName);
-    }
-
-    protected static void addGetterProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
-        String methodName = "get" + StringUtils.capitalize(propertyName);
-        log(LogLevelSetting.DEBUG, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
-        int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
-        JMethod method = toPopulate.method(mod, parameterRef, methodName);
-        method.annotate(jCodeModel.ref(JsProperty.class));
-    }
-
-    protected static void addSetterProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, JClass parameterRef, String propertyName) {
-        String methodName = "set" + StringUtils.capitalize(propertyName);
-        log(LogLevelSetting.DEBUG, String.format("Add %1$s property to object %2$s.%3$s ...", methodName, toPopulate._package().name(), toPopulate.name()), null);
-        int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
-        JMethod method = toPopulate.method(mod, Void.TYPE, methodName);
-        method.param(parameterRef, "toSet");
-        method.annotate(jCodeModel.ref(JsProperty.class));
+        log(LogLevelSetting.DEBUG, String.format("Add %1$s accessors to object %2$s.%3$s ...", elementName, toPopulate._package().name(), toPopulate.name()));
+        String publicName = StringUtils.capitalize(elementName);
+        addGetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
+        addSetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
     }
 }
