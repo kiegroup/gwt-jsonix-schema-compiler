@@ -52,24 +52,27 @@ public class JsUtilsBuilder {
     private static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
     private static final int PRIVATE_STATIC_MODS = JMod.PRIVATE + JMod.STATIC;
 
-    private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\npublic static native <D> JsArrayLike<D> getUnwrappedElementsArray(final JsArrayLike<D> original) /*-{\n" +
-            "        var toReturn = original.map(function (arrayItem) {\n" +
-            "            var retrieved = arrayItem.value\n" +
-            "            var toSet = retrieved == null ? arrayItem : retrieved\n" +
-            "            console.log(toSet);\n" +
-            "            return toSet;\n" +
-            "        });\n" +
+    private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\n    public static native <D> JsArrayLike<D> getUnwrappedElementsArray(final JsArrayLike<D> original) /*-{\n" +
+            "        var toReturn = [];\n" +
+            "        if(original != null) {\n" +
+            "            toReturn = original.map(function (arrayItem) {\n" +
+            "                var retrieved = arrayItem.value\n" +
+            "                var toSet = retrieved == null ? arrayItem : retrieved\n" +
+            "                console.log(toSet);\n" +
+            "                return toSet;\n" +
+            "            });\n" +
+            "        }\n" +
             "        return toReturn;\n" +
             "    }-*/;\n";
 
-    private static final String GET_UNWRAPPED_ELEMENT_METHOD = "\r\npublic static native Object getUnwrappedElement(final Object original) /*-{\n" +
+    private static final String GET_UNWRAPPED_ELEMENT_METHOD = "\r\n    public static native Object getUnwrappedElement(final Object original) /*-{\n" +
             "        var toReturn = original.value;\n" +
             "        var toSet = toReturn == null ? original : toReturn;\n" +
             "        console.log(toSet);\n" +
             "        return toSet;\n" +
             "    }-*/;\n";
 
-    private static final String TO_ATTRIBUTES_MAP_METHOD = "\r\nprivate static native void toAttributesMap(final Map<QName, String> toReturn,\n" +
+    private static final String TO_ATTRIBUTES_MAP_METHOD = "\r\n    private static native void toAttributesMap(final Map<QName, String> toReturn,\n" +
             "                                               final Object original) /*-{\n" +
             "        var keys = Object.keys(original);\n" +
             "        for (var i = 0; i < keys.length; i++) {\n" +
