@@ -10,6 +10,18 @@
   <version>1.0b</version>
   <name>org.kogito.gwt-jsonix-marshallers-project</name>
 
+  <contributors>
+    <contributor>
+      <name>Michael Anstis</name>
+    </contributor>
+    <contributor>
+      <name>Guillerme Gomes</name>
+    </contributor>
+    <contributor>
+      <name>Gabriele Cardosi</name>
+    </contributor>
+  </contributors>
+
   <properties>
 
     <!-- Setting maven.compiler.source to something different to 1.8
