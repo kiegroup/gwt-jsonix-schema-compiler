@@ -114,13 +114,13 @@ public class BuilderUtils {
         return setterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
     }
 
-    public static Optional<JClass> getJavaRef(String originalClassName, JCodeModel jCodeModel) {
+    public static Optional<JClass> getJavaRef(String originalClassName, JCodeModel jCodeModel, boolean toUnbox) {
         Optional<JClass> toReturn = Optional.empty();
         try {
             final Class<?> aClass = Class.forName(originalClassName);
             if (originalClassName.startsWith("java")) {
                 JClass ref = jCodeModel.ref(aClass);
-                if (!ref.isPrimitive()) {
+                if (!ref.isPrimitive() && toUnbox) {
                     ref = jCodeModel.ref(ref.unboxify().fullName());
                 }
                 toReturn = Optional.ofNullable(ref);
