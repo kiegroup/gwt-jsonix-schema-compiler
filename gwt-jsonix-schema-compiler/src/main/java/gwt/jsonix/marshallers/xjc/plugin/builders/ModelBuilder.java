@@ -362,11 +362,14 @@ public class ModelBuilder {
         String fullClassName = null;
         log(LogLevelSetting.DEBUG, "getClassName...");
         if (cPropertyInfo instanceof CReferencePropertyInfo) {
-            final Set<CElement> elements = ((CReferencePropertyInfo) cPropertyInfo).getElements();
+            final CReferencePropertyInfo cReferencePropertyInfo = (CReferencePropertyInfo) cPropertyInfo;
+            final Set<CElement> elements = (cReferencePropertyInfo).getElements();
             if (!elements.isEmpty()) {
                 final CElementInfo cElement = (CElementInfo) elements.toArray()[0];
                 CElementPropertyInfo property = cElement.getProperty();
                 fullClassName = getPropertyClassName(property);
+            } else if (cReferencePropertyInfo.baseType != null) {
+                fullClassName = cReferencePropertyInfo.baseType.fullName();
             }
         } else {
             fullClassName = getPropertyClassName(cPropertyInfo);
