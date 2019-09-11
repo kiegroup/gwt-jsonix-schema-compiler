@@ -18,7 +18,6 @@
     version="2.1"
     xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
     xmlns:jsonix="http://jsonix.highsource.org/customizations"
-    xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     jaxb:extensionBindingPrefixes="jsonix">
 
@@ -37,13 +36,6 @@
     <jaxb:schemaBindings>
       <jaxb:package name="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.di"/>
     </jaxb:schemaBindings>
-    <!-- Extensions -->
-    <jaxb:bindings node=".//xs:complexType[@name='DiagramElement']/xs:sequence/xs:element[@name='extension']/xs:complexType/xs:sequence/xs:any">
-      <jaxb:property>
-        <jaxb:baseType name="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.ke.ComponentsWidthsExtensionType"/>
-      </jaxb:property>
-    </jaxb:bindings>
-    <!-- end Extensions -->
     <jsonix:packageMapping
         packageName="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.di"
         spaceName="DI"/>
@@ -57,23 +49,10 @@
     <jsonix:packageMapping
         packageName="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.dmndi12"
         spaceName="DMNDI12"/>
-  </jaxb:bindings><!---->
+  </jaxb:bindings>
 
   <!-- DMN1.2 -->
   <jaxb:bindings schemaLocation="DMN12.xsd" node="/xs:schema">
-    <jaxb:bindings node=".//xs:complexType[@name='tDMNElement']">
-      <inheritance:extends>org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.DMNModelInstrumentedBase</inheritance:extends>
-    </jaxb:bindings>
-    <jaxb:bindings node=".//xs:complexType[@name='tBinding']">
-      <inheritance:extends>org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.DMNModelInstrumentedBase</inheritance:extends>
-    </jaxb:bindings>
-    <!-- Extensions -->
-    <jaxb:bindings node=".//xs:complexType[@name='tDMNElement']/xs:sequence/xs:element[@name='extensionElements']/xs:complexType/xs:sequence/xs:any">
-      <jaxb:property>
-        <jaxb:baseType name="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.ke.AttachmentType"/>
-      </jaxb:property>
-    </jaxb:bindings>
-    <!-- end Extensions -->
     <jaxb:schemaBindings>
       <jaxb:package name="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.dmn12"/>
     </jaxb:schemaBindings>
@@ -83,13 +62,13 @@
   </jaxb:bindings>
 
   <!-- KIE EXTENSIONS -->
-  <jaxb:bindings schemaLocation="KE.xsd" node="/xs:schema">
+  <jaxb:bindings schemaLocation="KIE.xsd" node="/xs:schema">
     <jaxb:schemaBindings>
-      <jaxb:package name="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.ke"/>
+      <jaxb:package name="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.kie"/>
     </jaxb:schemaBindings>
     <jsonix:packageMapping
-        packageName="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.ke"
-        spaceName="KE"/>
-  </jaxb:bindings><!---->
+        packageName="org.kie.workbench.common.dmn.webapp.kogito.marshaller.js.model.kie"
+        spaceName="KIE"/>
+  </jaxb:bindings>
 
 </jaxb:bindings>
