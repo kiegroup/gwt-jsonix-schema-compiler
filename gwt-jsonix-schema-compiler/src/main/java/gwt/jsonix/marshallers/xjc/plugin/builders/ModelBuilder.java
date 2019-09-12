@@ -78,18 +78,22 @@ public class ModelBuilder {
             "    }-*/;\n";
 
     protected static final String GET_JSARRAY_TEMPLATE = "\n\n\n\npublic static native %1$s get%2$s(%3$s instance) /*-{\n" +
+            "         instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getUnwrappedElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
             "        return @%4$s.JsUtils::getUnwrappedElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
             "    }-*/;\n";
 
     protected static final String ADD_JSARRAY_TEMPLATE = "\n\n\n\npublic static native void add%1$s(%2$s instance, %3$s toAdd) /*-{\n" +
+            "        instance.%5$s = @%6$s::get%1$s(%7$s;)(instance)\n" +
             "        return @%4$s.JsUtils::add(Ljsinterop/base/JsArrayLike;Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
             "    }-*/;\n";
 
     protected static final String ADDALL_JSARRAY_TEMPLATE = "\n\n\n\npublic static native void addAll%1$s(%2$s instance, JsArrayLike<? extends %3$s> toAdd) /*-{\n" +
+            "        instance.%5$s = @%6$s::get%1$s(%7$s;)(instance)\n" +
             "        return @%4$s.JsUtils::addAll(Ljsinterop/base/JsArrayLike;[Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
             "    }-*/;\n";
 
     protected static final String REMOVE_JSARRAY_TEMPLATE = "\n\n\n\npublic static native void remove%1$s(%2$s instance, int index) /*-{\n" +
+            "        instance.%4$s = @%5$s::get%1$s(%6$s;)(instance)\n" +
             "        return @%3$s.JsUtils::remove(Ljsinterop/base/JsArrayLike;I)(instance.%4$s, index)\n" +
             "    }-*/;\n";
 
@@ -256,19 +260,25 @@ public class ModelBuilder {
 
     protected static void addStaticJsArrayAdd(JDefinedClass jDefinedClass, String toAddType, String specificGetNamePart, String propertyName, String packageName) {
         log(LogLevelSetting.DEBUG, String.format("Add add%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(ADD_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName);
+        String fullName = jDefinedClass.fullName();
+        String jsniName = getJNIRepresentation(jDefinedClass);
+        String directString = String.format(ADD_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName, fullName, jsniName);
         jDefinedClass.direct(directString);
     }
 
     protected static void addStaticJsArrayAddAll(JDefinedClass jDefinedClass, String toAddType, String specificGetNamePart, String propertyName, String packageName) {
         log(LogLevelSetting.DEBUG, String.format("Add addAll%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(ADDALL_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName);
+        String fullName = jDefinedClass.fullName();
+        String jsniName = getJNIRepresentation(jDefinedClass);
+        String directString = String.format(ADDALL_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName, fullName, jsniName);
         jDefinedClass.direct(directString);
     }
 
     protected static void addStaticJsArrayRemove(JDefinedClass jDefinedClass, String specificGetNamePart, String propertyName, String packageName) {
         log(LogLevelSetting.DEBUG, String.format("Add remove%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(REMOVE_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), packageName, propertyName);
+        String fullName = jDefinedClass.fullName();
+        String jsniName = getJNIRepresentation(jDefinedClass);
+        String directString = String.format(REMOVE_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), packageName, propertyName, fullName, jsniName);
         jDefinedClass.direct(directString);
     }
 
@@ -414,5 +424,14 @@ public class ModelBuilder {
                                        JCodeModel codeModel,
                                        Map<String, JClass> definedClassesMap) {
         return new JavaTypeParser(definedClassesMap).parseClass(className, codeModel);
+    }
+
+    protected static String getJNIRepresentation(JDefinedClass toConvert) {
+        String className = toConvert.name();
+        if (toConvert.outer() != null) {
+            className = toConvert.outer().name() + "$" + className;
+        }
+        String toReturn = "L" + toConvert._package().name().replace('.', '/') + "/" + className;
+        return toReturn;
     }
 }
