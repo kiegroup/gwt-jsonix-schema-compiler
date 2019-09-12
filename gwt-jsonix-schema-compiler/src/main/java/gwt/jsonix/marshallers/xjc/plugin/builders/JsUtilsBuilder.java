@@ -47,6 +47,7 @@ import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 public class JsUtilsBuilder {
 
     private static final String GENERIC_TYPE_NAME = "D";
+    private static final String GENERIC_EXTEND_TYPE_NAME = "E";
     private static final String ELEMENT = "element";
     private static final int PUBLIC_STATIC_MODS = JMod.PUBLIC + JMod.STATIC;
     private static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
@@ -70,6 +71,10 @@ public class JsUtilsBuilder {
             "        var toSet = toReturn == null ? original : toReturn;\n" +
             "        console.log(toSet);\n" +
             "        return toSet;\n" +
+            "    }-*/;\n";
+
+    private static final String GET_NATIVE_ARRAY_METHOD = "\r\n    public static native JsArrayLike getNativeArray() /*-{\n" +
+            "        return [];\n" +
             "    }-*/;\n";
 
     private static final String TO_ATTRIBUTES_MAP_METHOD = "\r\n    private static native void toAttributesMap(final Map<QName, String> toReturn,\n" +
@@ -99,6 +104,7 @@ public class JsUtilsBuilder {
         addToListMethod(jCodeModel, toPopulate);
         addGetUnwrappedElementsArrayMethod(toPopulate);
         addGetUnwrappedElementMethod(toPopulate);
+        addGetNativeArray(toPopulate);
         addJavaToAttributesMapMethod(jCodeModel, toPopulate);
         addNativeToAttributesMapMethod(toPopulate, jsMainPackage);
         addPutToAttributesMap(jCodeModel, toPopulate);
@@ -134,12 +140,14 @@ public class JsUtilsBuilder {
         return toReturn;
     }
 
-    protected static JMethod addAddAllMethod(JCodeModel jCodeModel, JDefinedClass jsUtils, JMethod addMethod) {
+    protected static JMethod addAddAllMethod(JCodeModel jCodeModel, JDefinedClass jsUtils, JMethod addMethod)  {
         log(LogLevelSetting.DEBUG, "Add 'addAll' method...");
         JClass genericT = getGenericT(jCodeModel);
+        JClass genericE =  getGenericTExtends(jCodeModel);
         final JMethod toReturn = getGenerifiedJMethod(jsUtils, Void.TYPE, "addAll");
+        toReturn.generify(GENERIC_EXTEND_TYPE_NAME, genericT);
         final JVar jsArrayLikeParameter = getJSArrayNarrowedJVar(jCodeModel, toReturn);
-        final JVar elementParam = toReturn.varParam(genericT, "elements");
+        final JVar elementParam = toReturn.varParam(genericE, "elements");
         elementParam.mods().setFinal(true);
         final JBlock block = toReturn.body();
         final JInvocation addInvocation = jsUtils.staticInvoke(addMethod).arg(jsArrayLikeParameter).arg(JExpr.ref(ELEMENT));
@@ -202,6 +210,11 @@ public class JsUtilsBuilder {
         jsUtils.direct(GET_UNWRAPPED_ELEMENT_METHOD);
     }
 
+    protected static void addGetNativeArray(JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add 'getNativeArray' method...");
+        jsUtils.direct(GET_NATIVE_ARRAY_METHOD);
+    }
+
     /**
      * @param jCodeModel
      * @param jsUtils
@@ -261,7 +274,6 @@ public class JsUtilsBuilder {
         jsUtils.direct(String.format(TO_ATTRIBUTES_MAP_METHOD, jsMainPackage));
     }
 
-
     private static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
         JMethod toReturn = getJMethod(jsUtils, returnType, methodName);
         toReturn.generify(GENERIC_TYPE_NAME);
@@ -310,12 +322,16 @@ public class JsUtilsBuilder {
         return jCodeModel.ref(GENERIC_TYPE_NAME);
     }
 
+    private static JClass getGenericTExtends(JCodeModel jCodeModel) {
+        return jCodeModel.ref(GENERIC_EXTEND_TYPE_NAME);
+    }
+
     private static JClass getJsArrayNarrowedClass(JCodeModel jCodeModel) {
         JClass jsArrayLikeClass = jCodeModel.ref(JsArrayLike.class);
         return jsArrayLikeClass.narrow(getGenericT(jCodeModel));
     }
 
-    private static JClass getQNameStringNarrowedMapClass(JCodeModel jCodeModel){
+    private static JClass getQNameStringNarrowedMapClass(JCodeModel jCodeModel) {
         JClass rawMapClass = jCodeModel.ref(Map.class);
         final JClass qName = jCodeModel.ref(QName.class);
         return rawMapClass.narrow(qName, jCodeModel.ref(String.class));
