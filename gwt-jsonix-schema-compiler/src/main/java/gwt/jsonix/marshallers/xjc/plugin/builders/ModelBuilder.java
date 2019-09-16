@@ -24,6 +24,7 @@ import javax.xml.namespace.QName;
 
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
@@ -33,6 +34,7 @@ import com.sun.codemodel.JEnumConstant;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JVar;
@@ -48,6 +50,7 @@ import com.sun.tools.xjc.model.CReferencePropertyInfo;
 import com.sun.tools.xjc.model.Model;
 import com.sun.tools.xjc.model.nav.NClass;
 import gwt.jsonix.marshallers.xjc.plugin.exceptions.ParseModelException;
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import jsinterop.base.JsArrayLike;
@@ -67,65 +70,6 @@ import static org.jvnet.jaxb2_commons.plugin.inheritance.Customizations.EXTENDS_
  */
 public class ModelBuilder {
 
-    protected static final String NEW_INSTANCE_TEMPLATE = "\r\npublic static native %1$s newInstance() /*-{\n" +
-            "        var json = \"{\\\"TYPE_NAME\\\": \\\"%2$s\\\"}\";\n" +
-            "        var retrieved = JSON.parse(json)\n" +
-            "        return retrieved\n" +
-            "    }-*/;\n";
-
-    protected static final String INSTANCE_OF_TEMPLATE = "\r\npublic static native boolean instanceOf(Object instance) /*-{\n" +
-            "       return instance.TYPE_NAME != null && instance.TYPE_NAME === \"%1$s\"\n" +
-            "    }-*/;\n";
-
-    protected static final String GET_JSARRAY_TEMPLATE = "\r\n/**\n" +
-                    "     * Returns a <code>%1$s</code> where each element represents the <b>unwrapped</b> object (i.e. object.value) of the original one\n" +
-                    "     * @param instance\n" +
-                    "     * @return\n" +
-                    "     */" +
-                    "     public static native %1$s get%2$s(%3$s instance) /*-{\n" +
-                    "         instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
-                    "        return @%4$s.JsUtils::getUnwrappedElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
-                    "    }-*/;\n";
-
-    protected static final String GET_NATIVE_JSARRAY_TEMPLATE = "\r\n/**\n" +
-                    "     * Returns a <code>%1$s</code> where each element represents the original <b>wrapped</b> object (i.e. the whole object)\n" +
-                    "     * @param instance\n" +
-                    "     * @return\n" +
-                    "     */" +
-                    "     public static native %1$s getNative%2$s(%3$s instance) /*-{\n" +
-                    "         instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
-                    "        return instance.%5$s\n" +
-                    "    }-*/;\n";
-
-    protected static final String ADD_TO_JSARRAY_TEMPLATE = "\r\n/**\n" +
-            "     * Add a <b>wrapped</b> representation of <code>%3$s</code> to <code>%2$s.%5$s</code> \n" +
-            "     * @param instance \n" +
-            "     * @param toAdd the <b>unwrapped</b> <code>%3$s</code> to add\n" +
-            "     */\n" +
-            "     public static native void add%1$s(%2$s instance, %3$s toAdd) /*-{\n" +
-            "        instance.%5$s = @%6$s::get%1$s(%7$s;)(instance)\n" +
-            "        return @%4$s.JsUtils::add(Ljsinterop/base/JsArrayLike;Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
-            "    }-*/;\n";
-
-    protected static final String ADDALL_TO_JSARRAY_TEMPLATE = "\r\n/**\n" +
-            "     * Add the <b>wrapped</b> representations of all given <code>%3$s</code>s to <code>%2$s.%5$s</code>\n" +
-            "     * @param instance \n" +
-            "     * @param toAdd <code>JsArrayLike</code> of <b>unwrapped</b> <code>%3$s</code>s to add\n" +
-            "     */\n" +
-            "     public static native void addAll%1$s(%2$s instance, JsArrayLike<? extends %3$s> toAdd) /*-{\n" +
-            "        instance.%5$s = @%6$s::get%1$s(%7$s;)(instance)\n" +
-            "        return @%4$s.JsUtils::addAll(Ljsinterop/base/JsArrayLike;[Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
-            "    }-*/;\n";
-
-    protected static final String REMOVE_JSARRAY_TEMPLATE = "\r\npublic static native void remove%1$s(%2$s instance, int index) /*-{\n" +
-            "        instance.%4$s = @%5$s::getNative%1$s(%6$s;)(instance)\n" +
-            "        return @%3$s.JsUtils::remove(Ljsinterop/base/JsArrayLike;I)(instance.%4$s, index)\n" +
-            "    }-*/;\n";
-
-    protected static final String GET_OTHER_ATTRIBUTES_TEMPLATE = "\r\npublic static native Map<QName, String> getOtherAttributesMap(final %1$s instance) /*-{\n" +
-            "        return @%2$s.JsUtils::toAttributesMap(Ljava/lang/Object;)(instance.otherAttributes)\n" +
-            "    }-*/;\n";
-
     private ModelBuilder() {
     }
 
@@ -135,17 +79,18 @@ public class ModelBuilder {
      * @param model
      * @param jCodeModel
      * @param packageModuleMap
+     * @param jsUtilsClass
      * @throws Exception
      */
-    public static void generateJSInteropModels(Map<String, JClass> definedClassesMap, Model model, JCodeModel jCodeModel, Map<String, String> packageModuleMap, String packageName) throws ParseModelException, JClassAlreadyExistsException {
+    public static void generateJSInteropModels(Map<String, JClass> definedClassesMap, Model model, JCodeModel jCodeModel, Map<String, String> packageModuleMap, JDefinedClass jsUtilsClass) throws ParseModelException, JClassAlreadyExistsException {
         definedClassesMap.clear();
         log(LogLevelSetting.DEBUG, "Generating JSInterop code...");
         for (CClassInfo cClassInfo : model.beans().values()) {
-            populateJCodeModel(definedClassesMap, jCodeModel, cClassInfo, packageModuleMap, model, packageName);
+            populateJCodeModel(definedClassesMap, jCodeModel, cClassInfo, packageModuleMap, model, jsUtilsClass);
         }
     }
 
-    protected static void populateJCodeModel(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo, Map<String, String> packageModuleMap, Model model, String packageName) throws JClassAlreadyExistsException, ParseModelException {
+    protected static void populateJCodeModel(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, CClassInfo cClassInfo, Map<String, String> packageModuleMap, Model model, JDefinedClass jsUtilsClass) throws JClassAlreadyExistsException, ParseModelException {
         log(LogLevelSetting.DEBUG, "Generating  JCode model...");
         if (definedClassesMap.containsKey(cClassInfo.fullName())) {
             return;
@@ -154,6 +99,7 @@ public class ModelBuilder {
         final JDefinedClass jDefinedClass;
         final JExpression nameSpaceExpression;
         final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
+        final String packageName = jsUtilsClass._package().name();
         JClass jDefinedBaseClass = null;
 
         String shortClassName = cClassInfo.shortName;
@@ -166,7 +112,7 @@ public class ModelBuilder {
             jDefinedBaseClass = getFromExtendsClassCustomization(definedClassesMap, toPopulate, extendsClassCustomization);
         }
         if (basecClassInfo != null) { // This is the "extended" class
-            jDefinedBaseClass = getFromBasecClassInfo(definedClassesMap, toPopulate, packageModuleMap, model, basecClassInfo, packageName);
+            jDefinedBaseClass = getFromBasecClassInfo(definedClassesMap, toPopulate, packageModuleMap, model, basecClassInfo, jsUtilsClass);
         }
         boolean hasClassParent = (parent != null && !(parent instanceof CClassInfoParent.Package));
         String parentNamespace = null;
@@ -187,19 +133,20 @@ public class ModelBuilder {
         comment.append(commentString);
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
                 .param("namespace", nameSpaceExpression)
-                .param("name", shortClassName);
+                .param("name", shortClassName)
+                .param("isNative", true);
         String moduleName = packageModuleMap.get(jDefinedClass._package().name());
-        addNewInstance(jDefinedClass, moduleName, nameSpace);
-        addInstanceOf(jDefinedClass, moduleName, nameSpace);
+        addNewInstance(jDefinedClass, jsUtilsClass);
+        addInstanceOf(jDefinedClass, jsUtilsClass, moduleName, nameSpace);
         addTypeName(jDefinedClass, toPopulate, moduleName, nameSpace);
         if (basecClassInfo == null) {
             addGetTypeNameProperty(toPopulate, jDefinedClass, nameSpace);
         }
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
-            addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace, packageName);
+            addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace, jsUtilsClass);
         }
         if (cClassInfo.declaresAttributeWildcard()) {
-            addOtherAttributesProperty(toPopulate, jDefinedClass, nameSpace, packageName);
+            addOtherAttributesProperty(toPopulate, jDefinedClass, jsUtilsClass, nameSpace);
         }
     }
 
@@ -230,9 +177,9 @@ public class ModelBuilder {
         return parseClass(extendsClassName, toPopulate, definedClassesMap);
     }
 
-    protected static JClass getFromBasecClassInfo(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, Map<String, String> packageModuleMap, Model model, CClassInfo basecClassInfo, String packageName) throws ParseModelException, JClassAlreadyExistsException {
+    protected static JClass getFromBasecClassInfo(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, Map<String, String> packageModuleMap, Model model, CClassInfo basecClassInfo, JDefinedClass jsUtilsClass) throws ParseModelException, JClassAlreadyExistsException {
         if (!definedClassesMap.containsKey(basecClassInfo.fullName())) {
-            populateJCodeModel(definedClassesMap, toPopulate, basecClassInfo, packageModuleMap, model, packageName);
+            populateJCodeModel(definedClassesMap, toPopulate, basecClassInfo, packageModuleMap, model, jsUtilsClass);
         }
         return definedClassesMap.get(basecClassInfo.fullName());
     }
@@ -257,104 +204,100 @@ public class ModelBuilder {
         getterMethod.body()._return(field);
     }
 
-    protected static void addNewInstance(JDefinedClass jDefinedClass, String moduleName, String originalName) {
-        String fullName = moduleName + "." + originalName;
-        String directString = String.format(NEW_INSTANCE_TEMPLATE, jDefinedClass.name(), fullName);
-        jDefinedClass.direct(directString);
+    protected static void addNewInstance(final JDefinedClass jDefinedClass,
+                                         final JDefinedClass jsUtilsClass) {
+
+        final int mods = JMod.PUBLIC + JMod.STATIC;
+        final JMethod instanceOfMethod = jDefinedClass.method(mods, jDefinedClass, "newInstance");
+        final JBlock block = instanceOfMethod.body();
+
+        instanceOfMethod.annotate(JsOverlay.class);
+
+        block._return(jsUtilsClass.staticInvoke("newInstance").arg(jDefinedClass.dotclass()));
     }
 
-    protected static void addInstanceOf(JDefinedClass jDefinedClass, String moduleName, String originalName) {
-        String fullName = moduleName + "." + originalName;
-        String directString = String.format(INSTANCE_OF_TEMPLATE, fullName);
-        jDefinedClass.direct(directString);
+    protected static void addInstanceOf(final JDefinedClass jDefinedClass,
+                                        final JDefinedClass jsUtilsClass,
+                                        final String moduleName,
+                                        final String originalName) {
+
+        final String fullTypeName = moduleName + "." + originalName;
+        final int mods = JMod.PUBLIC + JMod.STATIC;
+        final String methodName = "instanceOf" + jDefinedClass.name();
+
+        final JMethod instanceOfMethod = jDefinedClass.method(mods, Boolean.class, methodName);
+        final JBlock block = instanceOfMethod.body();
+        final JVar typeParam = instanceOfMethod.param(JMod.FINAL, Object.class, "instance");
+        final JInvocation getTypeName = jsUtilsClass.staticInvoke("getTypeName").arg(typeParam);
+
+        instanceOfMethod.annotate(JsOverlay.class);
+
+        block._return(JExpr.lit(fullTypeName).invoke("equals").arg(getTypeName));
     }
 
     protected static void addTypeName(JDefinedClass jDefinedClass, JCodeModel jCodeModel, String moduleName, String originalName) {
+
         final JClass propertyRef = jCodeModel.ref(String.class);
-        String fullName = moduleName + "." + originalName;
-        int mods = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
+        final String fullName = moduleName + "." + originalName;
+        final int mods = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
         final JFieldVar typeNameField = jDefinedClass.field(mods, propertyRef, "TYPE");
+
+        typeNameField.annotate(JsOverlay.class);
         typeNameField.init(JExpr.lit(fullName));
-    }
-
-    protected static void addStaticJsArrayGetter(JDefinedClass jDefinedClass, String jsArrayType, String specificGetNamePart, String propertyName, String packageName) {
-        log(LogLevelSetting.DEBUG, String.format("Add get%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(GET_JSARRAY_TEMPLATE, jsArrayType, specificGetNamePart, jDefinedClass.name(), packageName, propertyName);
-        jDefinedClass.direct(directString);
-    }
-
-    protected static void addStaticNativeJsArrayGetter(JDefinedClass jDefinedClass, String jsArrayType, String specificGetNamePart, String propertyName, String packageName) {
-        log(LogLevelSetting.DEBUG, String.format("Add getNative%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(GET_NATIVE_JSARRAY_TEMPLATE, jsArrayType, specificGetNamePart, jDefinedClass.name(), packageName, propertyName);
-        jDefinedClass.direct(directString);
-    }
-
-    protected static void addStaticJsArrayAdd(JDefinedClass jDefinedClass, String toAddType, String specificGetNamePart, String propertyName, String packageName) {
-        log(LogLevelSetting.DEBUG, String.format("Add add%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String fullName = jDefinedClass.fullName();
-        String jsniName = getJNIRepresentation(jDefinedClass);
-        String directString = String.format(ADD_TO_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName, fullName, jsniName);
-        jDefinedClass.direct(directString);
-    }
-
-    protected static void addStaticJsArrayAddAll(JDefinedClass jDefinedClass, String toAddType, String specificGetNamePart, String propertyName, String packageName) {
-        log(LogLevelSetting.DEBUG, String.format("Add addAll%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String fullName = jDefinedClass.fullName();
-        String jsniName = getJNIRepresentation(jDefinedClass);
-        String directString = String.format(ADDALL_TO_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), toAddType, packageName, propertyName, fullName, jsniName);
-        jDefinedClass.direct(directString);
-    }
-
-    protected static void addStaticJsArrayRemove(JDefinedClass jDefinedClass, String specificGetNamePart, String propertyName, String packageName) {
-        log(LogLevelSetting.DEBUG, String.format("Add remove%1$s method to object %2$s.%3$s ...", specificGetNamePart, jDefinedClass._package().name(), jDefinedClass.name()));
-        String fullName = jDefinedClass.fullName();
-        String jsniName = getJNIRepresentation(jDefinedClass);
-        String directString = String.format(REMOVE_JSARRAY_TEMPLATE, specificGetNamePart, jDefinedClass.name(), packageName, propertyName, fullName, jsniName);
-        jDefinedClass.direct(directString);
     }
 
     protected static void addGetTypeNameProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String namespace) {
         log(LogLevelSetting.DEBUG, String.format("Add getTYPENAME property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
         JClass parameterRef = jCodeModel.ref(String.class);
-        addGetter(jCodeModel, jDefinedClass, parameterRef, "TYPE_NAME", "TYPE_NAME", namespace);
+        addNativeGetter(jCodeModel, jDefinedClass, parameterRef, "TYPE_NAME", "TYPE_NAME", namespace);
     }
 
-    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String nameSpace, String packageName) throws ParseModelException, JClassAlreadyExistsException {
-        final JClass propertyRef = getPropertyRef(jCodeModel, cPropertyInfo, jDefinedClass.fullName(), definedClassesMap, packageModuleMap, model, packageName);
+    protected static void addProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, CPropertyInfo cPropertyInfo, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String nameSpace, JDefinedClass jsUtilsClass) throws ParseModelException, JClassAlreadyExistsException {
+
+        final JClass propertyRef = getPropertyRef(jCodeModel, cPropertyInfo, jDefinedClass.fullName(), definedClassesMap, packageModuleMap, model, jsUtilsClass);
         final String publicPropertyName = cPropertyInfo.getName(true);
         final String privatePropertyName = cPropertyInfo.getName(false);
-        addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
+
+        addGetter(jCodeModel, jDefinedClass, jsUtilsClass, nameSpace, propertyRef, publicPropertyName, privatePropertyName);
         addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
-        if (cPropertyInfo.isCollection() && propertyRef.getTypeParameters() != null && !propertyRef.getTypeParameters().isEmpty()) {
-            final JClass typeParameter = propertyRef.getTypeParameters().get(0);
-            String propertyType = typeParameter.name();
-            addStaticJsArrayGetter(jDefinedClass, propertyRef.name(), publicPropertyName, privatePropertyName, packageName);
-            addStaticNativeJsArrayGetter(jDefinedClass, propertyRef.name(), publicPropertyName, privatePropertyName, packageName);
-            addStaticJsArrayAdd(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
-            addStaticJsArrayAddAll(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
-            addStaticJsArrayRemove(jDefinedClass, publicPropertyName, privatePropertyName, packageName);
-        }
     }
 
     /**
      * Generates an attribute wildcard property on a class.
      */
-    protected static void addOtherAttributesProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String nameSpace, String packageName) {
+    protected static void addOtherAttributesProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JDefinedClass jsUtilsClass, String nameSpace) {
+
         log(LogLevelSetting.DEBUG, String.format("Add getOtherAttributes property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
+
         final JClass parameterRef = jCodeModel.ref(Map.class).narrow(QName.class, String.class);
-        addGetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
+        final JMethod otherAttributesGetter = addNativeGetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
+
         addSetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
-        addStaticOtherAttributesGetter(jDefinedClass, packageName);
+        addStaticOtherAttributesGetter(jCodeModel, jDefinedClass, otherAttributesGetter, jsUtilsClass);
     }
 
-    protected static void addStaticOtherAttributesGetter(JDefinedClass jDefinedClass, String packageName) {
+    protected static void addStaticOtherAttributesGetter(final JCodeModel jCodeModel,
+                                                         final JDefinedClass jDefinedClass,
+                                                         final JMethod otherAttributesGetter,
+                                                         final JDefinedClass jsUtilsClass) {
+
         log(LogLevelSetting.DEBUG, String.format("Add getOtherAttributesMap method to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
-        String directString = String.format(GET_OTHER_ATTRIBUTES_TEMPLATE, jDefinedClass.name(), packageName);
-        jDefinedClass.direct(directString);
+
+        final int mods = JMod.PUBLIC + JMod.STATIC;
+        final JClass parameterRef = jCodeModel.ref(Map.class).narrow(QName.class, String.class);
+
+        final JMethod jMethod = jDefinedClass.method(mods, parameterRef, "getOtherAttributesMap");
+        final JVar instanceParam = jMethod.param(JMod.FINAL, jDefinedClass, "instance");
+        final JBlock block = jMethod.body();
+        final JInvocation instanceOtherAttributes = instanceParam.invoke(otherAttributesGetter);
+
+        jMethod.annotate(JsOverlay.class);
+
+        block._return(jsUtilsClass.staticInvoke("toAttributesMap").arg(instanceOtherAttributes));
     }
 
-    protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, String packageName) throws ParseModelException, JClassAlreadyExistsException {
-        JClass typeRef = getOrCreatePropertyRef(cPropertyInfo, outerClass, definedClassesMap, jCodeModel, packageModuleMap, model, packageName);
+    protected static JClass getPropertyRef(JCodeModel jCodeModel, CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, Map<String, String> packageModuleMap, Model model, JDefinedClass jsUtilsClass) throws ParseModelException, JClassAlreadyExistsException {
+        JClass typeRef = getOrCreatePropertyRef(cPropertyInfo, outerClass, definedClassesMap, jCodeModel, packageModuleMap, model, jsUtilsClass);
         if (typeRef == null) {
             log(LogLevelSetting.WARN, "Failed to retrieve JClass for " + cPropertyInfo.getName(false) + " inside the JCodeModel");
             return null;
@@ -371,12 +314,12 @@ public class ModelBuilder {
         }
     }
 
-    protected static JClass getOrCreatePropertyRef(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model, String packageName) throws ParseModelException, JClassAlreadyExistsException {
+    protected static JClass getOrCreatePropertyRef(CPropertyInfo cPropertyInfo, String outerClass, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model, JDefinedClass jsUtilsClass) throws ParseModelException, JClassAlreadyExistsException {
         String originalClassName = getOriginalClassName(cPropertyInfo, outerClass);
-        return getOrCreatePropertyRef(originalClassName, definedClassesMap, jCodeModel, packageModuleMap, model, packageName, !cPropertyInfo.isCollection());
+        return getOrCreatePropertyRef(originalClassName, definedClassesMap, jCodeModel, packageModuleMap, model, jsUtilsClass, !cPropertyInfo.isCollection());
     }
 
-    protected static JClass getOrCreatePropertyRef(String originalClassName, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model, String packageName, boolean toUnbox) throws ParseModelException, JClassAlreadyExistsException {
+    protected static JClass getOrCreatePropertyRef(String originalClassName, Map<String, JClass> definedClassesMap, JCodeModel jCodeModel, Map<String, String> packageModuleMap, Model model, JDefinedClass jsUtilsClass, boolean toUnbox) throws ParseModelException, JClassAlreadyExistsException {
         JClass toReturn;
         final Optional<JClass> javaRef = getJavaRef(originalClassName, jCodeModel, toUnbox);
         if (javaRef.isPresent()) {
@@ -386,7 +329,7 @@ public class ModelBuilder {
                 Optional<NClass> nClassKey = model.beans().keySet().stream().filter(nClass -> nClass.fullName().equals(originalClassName)).findFirst();
                 Optional<NClass> nEnumKey = model.enums().keySet().stream().filter(nClass -> nClass.fullName().equals(originalClassName)).findFirst();
                 if (nClassKey.isPresent()) {
-                    populateJCodeModel(definedClassesMap, jCodeModel, model.beans().get(nClassKey.get()), packageModuleMap, model, packageName);
+                    populateJCodeModel(definedClassesMap, jCodeModel, model.beans().get(nClassKey.get()), packageModuleMap, model, jsUtilsClass);
                 } else if (nEnumKey.isPresent()) {
                     populateJCodeModel(definedClassesMap, jCodeModel, model.enums().get(nEnumKey.get()));
                 } else {
@@ -433,10 +376,88 @@ public class ModelBuilder {
         return toReturn;
     }
 
-    protected static void addGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
-            publicPropertyName, String privatePropertyName, String namespace) {
-        final JAnnotationUse name = BuilderUtils.addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName);
-        conditionalAddNamespaceToProperty(name, propertyRef, namespace);
+    protected static void addGetter(final JCodeModel jCodeModel,
+                                    final JDefinedClass jDefinedClass,
+                                    final JDefinedClass jsUtilsClass,
+                                    final String nameSpace,
+                                    final JClass propertyRef,
+                                    final String publicPropertyName,
+                                    final String privatePropertyName) {
+
+        final boolean isJsArrayLike = propertyRef != null && Objects.equals(propertyRef.erasure().name(), "JsArrayLike");
+
+        if (isJsArrayLike) {
+
+            final String nativePropertyName = "Native" + publicPropertyName;
+            final JClass propertyRefTypeParam = propertyRef.getTypeParameters().get(0);
+
+            addNativeGetter(jCodeModel, jDefinedClass, propertyRef, nativePropertyName, privatePropertyName, nameSpace);
+            addDefaultGetter(jCodeModel, jDefinedClass, jsUtilsClass, propertyRefTypeParam, publicPropertyName, privatePropertyName);
+            addAddMethod(jCodeModel, jDefinedClass, jsUtilsClass, propertyRefTypeParam, publicPropertyName, privatePropertyName);
+            addAddAllMethod(jCodeModel, jDefinedClass, jsUtilsClass, propertyRefTypeParam, publicPropertyName, privatePropertyName);
+            addRemoveMethod(jCodeModel, jDefinedClass, jsUtilsClass, publicPropertyName, privatePropertyName);
+        } else {
+            addNativeGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
+        }
+    }
+
+    protected static void addAddMethod(final JCodeModel jCodeModel,
+                                       final JDefinedClass jDefinedClass,
+                                       final JDefinedClass jsUtilsClass,
+                                       final JClass propertyRef,
+                                       final String publicPropertyName,
+                                       final String privatePropertyName) {
+        BuilderUtils.addAddMethod(jCodeModel, jDefinedClass, jsUtilsClass, propertyRef, publicPropertyName, privatePropertyName);
+    }
+
+    protected static void addAddAllMethod(final JCodeModel jCodeModel,
+                                          final JDefinedClass jDefinedClass,
+                                          final JDefinedClass jsUtilsClass,
+                                          final JClass propertyRef,
+                                          final String publicPropertyName,
+                                          final String privatePropertyName) {
+        BuilderUtils.addAddAllMethod(jCodeModel, jDefinedClass, jsUtilsClass, propertyRef, publicPropertyName, privatePropertyName);
+    }
+
+    protected static void addRemoveMethod(final JCodeModel jCodeModel,
+                                          final JDefinedClass jDefinedClass,
+                                          final JDefinedClass jsUtilsClass,
+                                          final String publicPropertyName,
+                                          final String privatePropertyName) {
+        BuilderUtils.addRemoveMethod(jCodeModel, jDefinedClass, jsUtilsClass, publicPropertyName, privatePropertyName);
+    }
+
+    protected static void addDefaultGetter(final JCodeModel jCodeModel,
+                                           final JDefinedClass jDefinedClass,
+                                           final JDefinedClass jsUtilsClass,
+                                           final JClass propertyRef,
+                                           final String publicPropertyName,
+                                           final String privatePropertyName) {
+        BuilderUtils.addDefaultGetter(jCodeModel, jDefinedClass, jsUtilsClass, propertyRef, publicPropertyName, privatePropertyName);
+    }
+
+    protected static JMethod addNativeGetter(final JCodeModel jCodeModel,
+                                             final JDefinedClass jDefinedClass,
+                                             final JClass propertyRef,
+                                             final String publicPropertyName,
+                                             final String privatePropertyName,
+                                             final String namespace) {
+
+        final JMethod jMethod = BuilderUtils.addNativeGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName);
+
+        getJSPropertyAnnotation(jMethod).ifPresent(jsPropertyAnnotation -> {
+            conditionalAddNamespaceToProperty(jsPropertyAnnotation, propertyRef, namespace);
+        });
+
+        return jMethod;
+    }
+
+    protected static Optional<JAnnotationUse> getJSPropertyAnnotation(final JMethod jMethod) {
+        try {
+            return Optional.ofNullable(jMethod.annotations().iterator().next());
+        } catch (final Exception e) {
+            return Optional.empty();
+        }
     }
 
     protected static void addSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String

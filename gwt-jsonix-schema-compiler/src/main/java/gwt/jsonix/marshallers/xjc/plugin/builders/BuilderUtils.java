@@ -18,21 +18,29 @@ package gwt.jsonix.marshallers.xjc.plugin.builders;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Optional;
 
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JCommentPart;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
+import com.sun.codemodel.JExpr;
+import com.sun.codemodel.JExpression;
+import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
+import com.sun.codemodel.JTypeVar;
+import com.sun.codemodel.JVar;
 import com.sun.codemodel.writer.FileCodeWriter;
 import com.sun.codemodel.writer.FilterCodeWriter;
 import com.sun.tools.xjc.model.Model;
 import gwt.jsonix.marshallers.xjc.plugin.GWTSettings;
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 import org.slf4j.Logger;
@@ -80,22 +88,137 @@ public class BuilderUtils {
             jCodeModel.build(codeWriter);
         } catch (IOException e) {
             throw new IOException("Unable to write files: "
-                                        + e.getMessage(), e);
+                                          + e.getMessage(), e);
         }
     }
 
-    public static JAnnotationUse addGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
-            publicPropertyName, String privatePropertyName) {
+    public static JAnnotationUse addDefaultGetter(final JCodeModel jCodeModel,
+                                                  final JDefinedClass jDefinedClass,
+                                                  final JDefinedClass jsUtilsClass,
+                                                  final JClass propertyRef,
+                                                  final String publicPropertyName,
+                                                  final String privatePropertyName) {
+
+        final String getterMethodName = "get" + publicPropertyName;
+        final int mod = JMod.PUBLIC + JMod.FINAL;
+        final JClass listPropertyRef = jCodeModel.ref(List.class).narrow(propertyRef);
+        final JMethod getterMethod = jDefinedClass.method(mod, listPropertyRef, getterMethodName);
+        final JDocComment getterComment = getterMethod.javadoc();
+        final JCommentPart getterCommentReturnPart = getterComment.addReturn();
+        final JBlock body = getterMethod.body();
+
+        getterComment.append("READ-ONLY getter for <b>" + privatePropertyName + "</b> as a {@link List}");
+        getterCommentReturnPart.add("The <b>" + privatePropertyName + "</b> mapped as a {@link List}");
+
+        final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
+        final JInvocation getUnwrappedElementsArrayInvocation = jsUtilsClass.staticInvoke("getUnwrappedElementsArray").arg(nativeGetterInvocation);
+        final JInvocation list = jsUtilsClass.staticInvoke("toList").arg(getUnwrappedElementsArrayInvocation);
+
+        body._return(list);
+
+        return getterMethod.annotate(jCodeModel.ref(JsOverlay.class));
+    }
+
+    public static JAnnotationUse addAddMethod(final JCodeModel jCodeModel,
+                                              final JDefinedClass jDefinedClass,
+                                              final JDefinedClass jsUtilsClass,
+                                              final JClass propertyRef,
+                                              final String publicPropertyName,
+                                              final String privatePropertyName) {
+
+        final String getterMethodName = "add" + publicPropertyName;
+        final int mod = JMod.PUBLIC + JMod.FINAL;
+        final JMethod addMethod = jDefinedClass.method(mod, Void.TYPE, getterMethodName);
+        final JTypeVar typeParam = addMethod.generify("D", propertyRef);
+        final JVar elementParam = addMethod.param(JMod.FINAL, typeParam, "element");
+        final JDocComment addMethodComment = addMethod.javadoc();
+        final JBlock body = addMethod.body();
+
+        addMethodComment.append("Appends the specified element to the end of <b>" + privatePropertyName + "</b>");
+        addMethodComment.addParam("element to be appended to <b>" + privatePropertyName + "</b>");
+
+        final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
+        final JInvocation nativeSetterInvocation = JExpr.invoke("set" + publicPropertyName);
+        final JExpression isNullNativeArray = nativeGetterInvocation.eq(JExpr._null());
+        final JInvocation getAddInvocation = jsUtilsClass.staticInvoke("add").arg(nativeGetterInvocation).arg(elementParam);
+        final JInvocation nativeArray = jsUtilsClass.staticInvoke("getNativeArray");
+
+        body._if(isNullNativeArray)._then().add(nativeSetterInvocation.arg(nativeArray));
+        body.add(getAddInvocation);
+
+        return addMethod.annotate(jCodeModel.ref(JsOverlay.class));
+    }
+
+    public static JAnnotationUse addAddAllMethod(final JCodeModel jCodeModel,
+                                                 final JDefinedClass jDefinedClass,
+                                                 final JDefinedClass jsUtilsClass,
+                                                 final JClass propertyRef,
+                                                 final String publicPropertyName,
+                                                 final String privatePropertyName) {
+
+        final String addAllMethodName = "addAll" + publicPropertyName;
+        final int mod = JMod.PUBLIC + JMod.FINAL;
+        final JMethod addAllMethod = jDefinedClass.method(mod, Void.TYPE, addAllMethodName);
+        final JTypeVar typeParam = addAllMethod.generify("D", propertyRef);
+        final JVar elementsParam = addAllMethod.varParam(typeParam, "elements");
+        final JDocComment addAllComment = addAllMethod.javadoc();
+        final JBlock body = addAllMethod.body();
+
+        addAllComment.append("Iterates over the specified collection of elements, and adds each element returned by the iterator\nto the end of <b>" + privatePropertyName + "</b>");
+        addAllComment.addParam("elements to be appended to <b>" + privatePropertyName + "</b>");
+
+        final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
+        final JInvocation nativeSetterInvocation = JExpr.invoke("set" + publicPropertyName);
+        final JExpression isNullNativeArray = nativeGetterInvocation.eq(JExpr._null());
+        final JInvocation getAddAllInvocation = jsUtilsClass.staticInvoke("addAll").arg(nativeGetterInvocation).arg(elementsParam);
+        final JInvocation nativeArray = jsUtilsClass.staticInvoke("getNativeArray");
+
+        body._if(isNullNativeArray)._then().add(nativeSetterInvocation.arg(nativeArray));
+        body.add(getAddAllInvocation);
+
+        return addAllMethod.annotate(jCodeModel.ref(JsOverlay.class));
+    }
+
+    public static JAnnotationUse addRemoveMethod(final JCodeModel jCodeModel,
+                                                 final JDefinedClass jDefinedClass,
+                                                 final JDefinedClass jsUtilsClass,
+                                                 final String publicPropertyName,
+                                                 final String privatePropertyName) {
+
+        final String removeMethodName = "remove" + publicPropertyName;
+        final int mod = JMod.PUBLIC + JMod.FINAL;
+        final JMethod addMethod = jDefinedClass.method(mod, Void.TYPE, removeMethodName);
+        final JVar indexParam = addMethod.param(JMod.FINAL, Integer.TYPE, "index");
+        final JDocComment removeComment = addMethod.javadoc();
+        final JBlock body = addMethod.body();
+
+        removeComment.append("Removes the element at the specified position in the <b>" + privatePropertyName + "</b>");
+        removeComment.addParam("index of the element to be removed");
+
+        final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
+        final JInvocation getAddInvocation = jsUtilsClass.staticInvoke("remove").arg(nativeGetterInvocation).arg(indexParam);
+
+        body.add(getAddInvocation);
+
+        return addMethod.annotate(jCodeModel.ref(JsOverlay.class));
+    }
+
+    public static JMethod addNativeGetter(final JCodeModel jCodeModel,
+                                          final JDefinedClass jDefinedClass,
+                                          final JClass propertyRef,
+                                          final String publicPropertyName,
+                                          final String privatePropertyName) {
         String getterMethodName = "get" + publicPropertyName;
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
         JMethod getterMethod = jDefinedClass.method(mod, propertyRef, getterMethodName);
         JDocComment getterComment = getterMethod.javadoc();
-        String commentString = "Getter for <b>" + privatePropertyName + "</b>";
+        String commentString = "Native getter for <b>" + privatePropertyName + "</b>";
         getterComment.append(commentString);
         JCommentPart getterCommentReturnPart = getterComment.addReturn();
-        commentString = " <b>" + privatePropertyName + "</<b>";
+        commentString = "The <b>" + privatePropertyName + "</b> JSON property";
         getterCommentReturnPart.add(commentString);
-        return getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
+        getterMethod.annotate(jCodeModel.ref(JsProperty.class)).param("name", privatePropertyName);
+        return getterMethod;
     }
 
     public static JAnnotationUse addSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
@@ -149,7 +272,7 @@ public class BuilderUtils {
                 getLog().warn(message, e);
                 break;
             case DEBUG:
-               getLog().debug(message, e);
+                getLog().debug(message, e);
                 break;
             case ERROR:
                 getLog().error(message, e);
@@ -188,5 +311,4 @@ public class BuilderUtils {
     private static Logger getLog() {
         return LoggerFactory.getLogger(BuilderUtils.class.getName());
     }
-
 }

@@ -104,7 +104,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
             final JDefinedClass jsUtilsClass = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, settings.getJsMainPackage());
             Map<String, String> packageModuleMap = getPackageModuleMap(model);
             Map<String, JClass> definedClassesMap = new HashMap<>();
-            ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap, jsUtilsClass._package().name());
+            ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap, jsUtilsClass);
             Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
             final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, topLevelElementsMap, jCodeModel);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);

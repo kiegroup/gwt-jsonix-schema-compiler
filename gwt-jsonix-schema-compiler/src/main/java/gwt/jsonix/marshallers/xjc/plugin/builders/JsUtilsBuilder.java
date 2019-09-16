@@ -98,7 +98,7 @@ public class JsUtilsBuilder {
             "     * Helper method to create a new, empty <code>JsArrayLike</code>\n" +
             "     * @return\n" +
             "     */\n" +
-            "     public static native JsArrayLike getNativeArray() /*-{\n" +
+            "     public static native <D> JsArrayLike<D> getNativeArray() /*-{\n" +
             "        return [];\n" +
             "    }-*/;\n";
 
@@ -110,6 +110,14 @@ public class JsUtilsBuilder {
             "            var value = original[key];\n" +
             "            @%1$s.JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
             "        }\n" +
+            "    }-*/;\n";
+
+    private static final String NEW_INSTANCE_TEMPLATE = "\r\n    public static native <D> D newInstance(final Class<D> klass) /*-{\n" +
+            "        return {\"TYPE_NAME\": klass.TYPE}\n" +
+            "    }-*/;\n";
+
+    private static final String GET_TYPE_NAME = "\r\n    public static native String getTypeName(final Object instance) /*-{\n" +
+            "        return instance.TYPE_NAME\n" +
             "    }-*/;\n";
 
     private JsUtilsBuilder() {
@@ -134,6 +142,16 @@ public class JsUtilsBuilder {
         addJavaToAttributesMapMethod(jCodeModel, toPopulate);
         addNativeToAttributesMapMethod(toPopulate, jsMainPackage);
         addPutToAttributesMap(jCodeModel, toPopulate);
+        addNewInstance(toPopulate);
+        addGetTypeName(toPopulate);
+    }
+
+    protected static void addNewInstance(final JDefinedClass jDefinedClass) {
+        jDefinedClass.direct(NEW_INSTANCE_TEMPLATE);
+    }
+
+    protected static void addGetTypeName(final JDefinedClass jDefinedClass) {
+        jDefinedClass.direct(GET_TYPE_NAME);
     }
 
     protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel, String jsMainPackage) throws JClassAlreadyExistsException {
