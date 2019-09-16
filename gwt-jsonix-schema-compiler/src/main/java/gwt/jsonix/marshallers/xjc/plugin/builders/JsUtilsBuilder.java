@@ -53,7 +53,14 @@ public class JsUtilsBuilder {
     private static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
     private static final int PRIVATE_STATIC_MODS = JMod.PRIVATE + JMod.STATIC;
 
-    private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\n    public static native <D> JsArrayLike<D> getUnwrappedElementsArray(final JsArrayLike<D> original) /*-{\n" +
+    private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\n/**\n" +
+            "     * Returns a <code>JsArrayLike</code> where each element represents the <b>unwrapped</b> object (i.e. object.value) of the original one.\n" +
+            "     * It the original <code>JsArrayLike</code> is <code>null</code>, returns a new, empty one\n" +
+            "     * @param original\n" +
+            "     * @param <D>\n" +
+            "     * @return\n" +
+            "     */\n" +
+            "     public static native <D> JsArrayLike<D> getUnwrappedElementsArray(final JsArrayLike<D> original) /*-{\n" +
             "        var toReturn = [];\n" +
             "        if(original != null) {\n" +
             "            toReturn = original.map(function (arrayItem) {\n" +
@@ -66,18 +73,36 @@ public class JsUtilsBuilder {
             "        return toReturn;\n" +
             "    }-*/;\n";
 
-    private static final String GET_UNWRAPPED_ELEMENT_METHOD = "\r\n    public static native Object getUnwrappedElement(final Object original) /*-{\n" +
+    private static final String GET_NATIVE_ELEMENTS_ARRAY_METHOD = "\r\n/**\n" +
+            "     * Returns the original <code>JsArrayLike</code> or, ift the original <code>JsArrayLike</code> is <code>null</code>, a new, empty one\n" +
+            "     * @param original\n" +
+            "     * @param <D>\n" +
+            "     * @return\n" +
+            "     */\n" +
+            "     public static native <D> JsArrayLike<D> getNativeElementsArray(final JsArrayLike<D> original) /*-{\n" +
+            "        if(original == null) {\n" +
+            "            return [];\n" +
+            "        } else {\n" +
+            "            return original;\n" +
+            "        }\n" +
+            "    }-*/;";
+
+    private static final String GET_UNWRAPPED_ELEMENT_METHOD = "\r\n     public static native Object getUnwrappedElement(final Object original) /*-{\n" +
             "        var toReturn = original.value;\n" +
             "        var toSet = toReturn == null ? original : toReturn;\n" +
             "        console.log(toSet);\n" +
             "        return toSet;\n" +
             "    }-*/;\n";
 
-    private static final String GET_NATIVE_ARRAY_METHOD = "\r\n    public static native JsArrayLike getNativeArray() /*-{\n" +
+    private static final String GET_NATIVE_ARRAY_METHOD = "\r\n/**\n" +
+            "     * Helper method to create a new, empty <code>JsArrayLike</code>\n" +
+            "     * @return\n" +
+            "     */\n" +
+            "     public static native JsArrayLike getNativeArray() /*-{\n" +
             "        return [];\n" +
             "    }-*/;\n";
 
-    private static final String TO_ATTRIBUTES_MAP_METHOD = "\r\n    private static native void toAttributesMap(final Map<QName, String> toReturn,\n" +
+    private static final String TO_ATTRIBUTES_MAP_METHOD = "\r\n     private static native void toAttributesMap(final Map<QName, String> toReturn,\n" +
             "                                               final Object original) /*-{\n" +
             "        var keys = Object.keys(original);\n" +
             "        for (var i = 0; i < keys.length; i++) {\n" +
@@ -102,6 +127,7 @@ public class JsUtilsBuilder {
         addAddAllMethod(jCodeModel, toPopulate, addMethod);
         addRemoveMethod(jCodeModel, toPopulate);
         addToListMethod(jCodeModel, toPopulate);
+        addGetNativeElementsArrayMethod(toPopulate);
         addGetUnwrappedElementsArrayMethod(toPopulate);
         addGetUnwrappedElementMethod(toPopulate);
         addGetNativeArray(toPopulate);
@@ -140,10 +166,10 @@ public class JsUtilsBuilder {
         return toReturn;
     }
 
-    protected static JMethod addAddAllMethod(JCodeModel jCodeModel, JDefinedClass jsUtils, JMethod addMethod)  {
+    protected static JMethod addAddAllMethod(JCodeModel jCodeModel, JDefinedClass jsUtils, JMethod addMethod) {
         log(LogLevelSetting.DEBUG, "Add 'addAll' method...");
         JClass genericT = getGenericT(jCodeModel);
-        JClass genericE =  getGenericTExtends(jCodeModel);
+        JClass genericE = getGenericTExtends(jCodeModel);
         final JMethod toReturn = getGenerifiedJMethod(jsUtils, Void.TYPE, "addAll");
         toReturn.generify(GENERIC_EXTEND_TYPE_NAME, genericT);
         final JVar jsArrayLikeParameter = getJSArrayNarrowedJVar(jCodeModel, toReturn);
@@ -203,6 +229,11 @@ public class JsUtilsBuilder {
     protected static void addGetUnwrappedElementsArrayMethod(JDefinedClass jsUtils) {
         log(LogLevelSetting.DEBUG, "Add 'getUnwrappedElementsArray' method...");
         jsUtils.direct(GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD);
+    }
+
+    protected static void addGetNativeElementsArrayMethod(JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add 'getNativeElementsArray' method...");
+        jsUtils.direct(GET_NATIVE_ELEMENTS_ARRAY_METHOD);
     }
 
     protected static void addGetUnwrappedElementMethod(JDefinedClass jsUtils) {
