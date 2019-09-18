@@ -50,18 +50,46 @@ public class MainJsBuilder {
      * @throws Exception
      */
     public static void generateJSInteropMainJs(final Map<String, Map<String, JDefinedClass>> callbacksMap, List<JDefinedClass> containersClasses, JCodeModel jCodeModel) throws JClassAlreadyExistsException {
+
+        addInitializeJsInteropConstructors(containersClasses, jCodeModel);
+
         for (JDefinedClass mainObject : containersClasses) {
             populateJCodeModel(jCodeModel, mainObject, callbacksMap.get(mainObject.name()));
         }
     }
 
+    protected static void addInitializeJsInteropConstructors(final List<JDefinedClass> containersClasses,
+                                                             final JCodeModel jCodeModel) throws JClassAlreadyExistsException {
+
+        if (containersClasses.isEmpty()) {
+            return;
+        }
+
+        final int mod = JMod.PUBLIC + JMod.FINAL + JMod.STATIC + JMod.NATIVE;
+        final JDefinedClass mainJsClass = getMainJsClass(jCodeModel, containersClasses.get(0));
+        final JMethod method = mainJsClass.method(mod, Void.TYPE, "initializeJsInteropConstructors");
+
+        method.annotate(jCodeModel.ref(JsMethod.class));
+    }
+
     protected static void populateJCodeModel(JCodeModel toPopulate, JClass containerRef, Map<String, JDefinedClass> callbackMap) throws JClassAlreadyExistsException {
+
+        final JDefinedClass jDefinedClass = getMainJsClass(toPopulate, containerRef);
+
+        addUnmarshall(toPopulate, jDefinedClass, callbackMap.get(UNMARSHALL_CALLBACK));
+        addMarshall(toPopulate, jDefinedClass, containerRef, callbackMap.get(MARSHALL_CALLBACK));
+    }
+
+    protected static JDefinedClass getMainJsClass(final JCodeModel toPopulate,
+                                                  final JClass containerRef) throws JClassAlreadyExistsException {
+
         String basePackage = containerRef._package().name();
         if (basePackage.contains(".")) {
             basePackage = basePackage.substring(0, basePackage.lastIndexOf('.'));
         }
         String fullMainJsName = basePackage + "." + MAIN_JS;
         JDefinedClass jDefinedClass = toPopulate._getClass(fullMainJsName);
+
         if (jDefinedClass == null) {
             jDefinedClass = toPopulate._class(basePackage + "." + MAIN_JS);
             JDocComment comment = jDefinedClass.javadoc();
@@ -69,8 +97,7 @@ public class MainJsBuilder {
             comment.append(commentString);
             jDefinedClass.annotate(toPopulate.ref(JsType.class)).param("isNative", true).param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"));
         }
-        addUnmarshall(toPopulate, jDefinedClass, callbackMap.get(UNMARSHALL_CALLBACK));
-        addMarshall(toPopulate, jDefinedClass, containerRef, callbackMap.get(MARSHALL_CALLBACK));
+        return jDefinedClass;
     }
 
     protected static void addUnmarshall(JCodeModel toPopulate, JDefinedClass jDefinedClass, JClass callbackRef) {
