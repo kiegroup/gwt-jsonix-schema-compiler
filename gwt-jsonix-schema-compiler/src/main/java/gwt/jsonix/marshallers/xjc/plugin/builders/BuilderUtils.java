@@ -87,7 +87,7 @@ public class BuilderUtils {
     public static JAnnotationUse addGetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
             publicPropertyName, String privatePropertyName) {
         String getterMethodName = "get" + publicPropertyName;
-        int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
+        int mod = JMod.PUBLIC /*+ JMod.FINAL*/ + JMod.NATIVE;
         JMethod getterMethod = jDefinedClass.method(mod, propertyRef, getterMethodName);
         JDocComment getterComment = getterMethod.javadoc();
         String commentString = "Getter for <b>" + privatePropertyName + "</b>";
