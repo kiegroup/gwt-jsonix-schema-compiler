@@ -126,6 +126,11 @@ public class ModelBuilder {
             "        return @%2$s.JsUtils::toAttributesMap(Ljava/lang/Object;)(instance.otherAttributes)\n" +
             "    }-*/;\n";
 
+    protected static final String SET_OTHER_ATTRIBUTES_TEMPLATE = "\r\n    public static native void setOtherAttributesMap(final %1$s instance, final Map<QName, String> attributes) /*-{\n" +
+            "        var otherAttributes = @%2$s.JsUtils::fromAttributesMap(Ljava/util/Map;)(attributes);\n" +
+            "        instance.otherAttributes = otherAttributes;\n" +
+            "    }-*/;\n";
+
     protected static final String GET_JSINAME_TEMPLATE = "\r\n    public static native %1$s getJSIName()/*-{\n" +
             "        var json = \"{\\\"namespaceURI\\\": \\\"%2$s\\\"," +
             " \\\"localPart\\\": \\\"%3$s\\\"," +
@@ -206,7 +211,7 @@ public class ModelBuilder {
             addStaticJSIName(jDefinedClass, cClassInfo.getTypeName(), jsiNameClass);
         }
 //        if (basecClassInfo == null) {
-            addGetTypeNameProperty(toPopulate, jDefinedClass, nameSpace);
+        addGetTypeNameProperty(toPopulate, jDefinedClass, nameSpace);
 //        }
         for (CPropertyInfo cPropertyInfo : cClassInfo.getProperties()) {
             addProperty(toPopulate, jDefinedClass, cPropertyInfo, definedClassesMap, packageModuleMap, model, nameSpace, packageName, jsiNameClass);
@@ -365,11 +370,18 @@ public class ModelBuilder {
         addGetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
         addSetter(jCodeModel, jDefinedClass, parameterRef, "OtherAttributes", "otherAttributes", nameSpace);
         addStaticOtherAttributesGetter(jDefinedClass, packageName);
+        addStaticOtherAttributesSetter(jDefinedClass, packageName);
     }
 
     protected static void addStaticOtherAttributesGetter(JDefinedClass jDefinedClass, String packageName) {
         log(LogLevelSetting.DEBUG, String.format("Add getOtherAttributesMap method to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
         String directString = String.format(GET_OTHER_ATTRIBUTES_TEMPLATE, jDefinedClass.name(), packageName);
+        jDefinedClass.direct(directString);
+    }
+
+    protected static void addStaticOtherAttributesSetter(JDefinedClass jDefinedClass, String packageName) {
+        log(LogLevelSetting.DEBUG, String.format("Add setOtherAttributesMap method to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
+        String directString = String.format(SET_OTHER_ATTRIBUTES_TEMPLATE, jDefinedClass.name(), packageName);
         jDefinedClass.direct(directString);
     }
 

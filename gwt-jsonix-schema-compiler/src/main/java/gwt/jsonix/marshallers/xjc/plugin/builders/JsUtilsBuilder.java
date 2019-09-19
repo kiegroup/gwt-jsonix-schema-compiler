@@ -129,7 +129,6 @@ public class JsUtilsBuilder {
             "        return toReturn;\n" +
             "    }-*/;\n";
 
-
     private static final String GET_NATIVE_ARRAY_METHOD = "\r\n     /**\n" +
             "     * Helper method to create a new, empty <code>JsArrayLike</code>\n" +
             "     * @return\n" +
@@ -146,6 +145,25 @@ public class JsUtilsBuilder {
             "            var value = original[key];\n" +
             "            @%1$s.JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
             "        }\n" +
+            "    }-*/;\n";
+
+    private static final String FROM_ATTRIBUTES_MAP_METHOD_BODY = "original.entrySet().stream().forEach(e -> {\n" +
+            "            putToJavaScriptObject(toReturn, e.getKey().toString(), e.getValue());\n" +
+            "        });";
+
+    private static final String GET_EMPTY_JS_OBJECT_METHOD = "\r\n    /**\n" +
+            "     * Helper method to create a new empty JavaScript object.\n" +
+            "     * @return\n" +
+            "     */\n" +
+            "    private static native Object getJsObject() /*-{\n" +
+            "        return {};\n" +
+            "    }-*/;\n";
+
+    private static final String PUT_TO_JS_OBJECT_METHOD = "\r\n    /**\n" +
+            "     * Helper method to add a value to a JavaScript object at the associated key.\n" +
+            "     */\n" + "" +
+            "    private static native void putToJavaScriptObject(final Object jso, final String key, final String value) /*-{\n" +
+            "        jso[key] = value;\n" +
             "    }-*/;\n";
 
     private JsUtilsBuilder() {
@@ -174,6 +192,9 @@ public class JsUtilsBuilder {
         addJavaToAttributesMapMethod(jCodeModel, toPopulate);
         addNativeToAttributesMapMethod(toPopulate, jsMainPackage);
         addPutToAttributesMap(jCodeModel, toPopulate);
+        addJavaFromAttributesMapMethod(jCodeModel, toPopulate);
+        addNativeGetJsObjectMethod(toPopulate);
+        addNativePutToJsObjectMethod(toPopulate);
     }
 
     protected static JDefinedClass getJsUtilsClass(JCodeModel jCodeModel, String jsMainPackage) throws JClassAlreadyExistsException {
@@ -284,7 +305,6 @@ public class JsUtilsBuilder {
         jDefinedClass.direct(directString);
     }
 
-
     protected static void addGetUnwrappedElementsArrayMethod(JDefinedClass jsUtils) {
         log(LogLevelSetting.DEBUG, "Add 'getUnwrappedElementsArray' method...");
         jsUtils.direct(GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD);
@@ -308,6 +328,16 @@ public class JsUtilsBuilder {
     protected static void addGetNativeArray(JDefinedClass jsUtils) {
         log(LogLevelSetting.DEBUG, "Add 'getNativeArray' method...");
         jsUtils.direct(GET_NATIVE_ARRAY_METHOD);
+    }
+
+    protected static void addNativeGetJsObjectMethod(JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add native 'getJsObject' method...");
+        jsUtils.direct(GET_EMPTY_JS_OBJECT_METHOD);
+    }
+
+    protected static void addNativePutToJsObjectMethod(JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add native 'putToJsObject' method...");
+        jsUtils.direct(PUT_TO_JS_OBJECT_METHOD);
     }
 
     /**
@@ -367,6 +397,32 @@ public class JsUtilsBuilder {
     protected static void addNativeToAttributesMapMethod(JDefinedClass jsUtils, String jsMainPackage) {
         log(LogLevelSetting.DEBUG, "Add native 'toAttributesMap' method...");
         jsUtils.direct(String.format(TO_ATTRIBUTES_MAP_METHOD, jsMainPackage));
+    }
+
+    /**
+     * @param jCodeModel
+     * @param jsUtils
+     * @return
+     */
+    protected static JMethod addJavaFromAttributesMapMethod(JCodeModel jCodeModel, JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add java 'fromAttributesMapMethod' method...");
+        JClass narrowedMap = getQNameStringNarrowedMapClass(jCodeModel);
+        final JMethod toReturn = getJMethod(jsUtils, jCodeModel.ref(Object.class), "fromAttributesMap");
+        toReturn.param(JMod.FINAL, narrowedMap, "original");
+        final JBlock block = toReturn.body();
+        final JVar mapToReturn = block.decl(JMod.FINAL, jCodeModel.ref(Object.class), "toReturn", JExpr.invoke("getJsObject"));
+        block.directStatement(FROM_ATTRIBUTES_MAP_METHOD_BODY);
+        block._return(mapToReturn);
+        final JDocComment javadoc = toReturn.javadoc();
+        String commentString = "Extracts the <b>otherAttributes</b> property from a <i>regular<i> Java Map to a JavaScriptObject.";
+        javadoc.append(commentString);
+        JCommentPart setterPart = javadoc.addParam("original");
+        commentString = " the <code>Map&lt;QName, String&gt;</code> to transform.";
+        setterPart.add(commentString);
+        JCommentPart returnPart = javadoc.addReturn();
+        commentString = "the populated JavaScriptObject";
+        returnPart.add(commentString);
+        return toReturn;
     }
 
     private static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
