@@ -36,6 +36,12 @@ public class JSINameBuilder {
 
     private static final String[] FIELDS = {"namespaceURI", "localPart", "prefix", "key", "string"};
 
+    protected static final String NEW_INSTANCE_TEMPLATE = "\r\n    public static native JSIName newInstance() /*-{\n"+
+            "        var json = \"{}\";\n"+
+            "        var retrieved = JSON.parse(json)\n"+
+            "        return retrieved\n"+
+            "    }-*/;";
+
     private JSINameBuilder() {
     }
 
@@ -49,6 +55,11 @@ public class JSINameBuilder {
         for (String field : FIELDS) {
             addField(jCodeModel, jDefinedClass, field);
         }
+        addNewInstance(jDefinedClass);
+    }
+
+    protected static void addNewInstance(JDefinedClass jDefinedClass) {
+        jDefinedClass.direct(NEW_INSTANCE_TEMPLATE);
     }
 
     protected static void addField(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String field) {
