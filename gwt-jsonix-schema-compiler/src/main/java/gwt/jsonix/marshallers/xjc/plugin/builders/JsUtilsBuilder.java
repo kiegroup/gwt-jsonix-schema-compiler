@@ -53,7 +53,35 @@ public class JsUtilsBuilder {
     private static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
     private static final int PRIVATE_STATIC_MODS = JMod.PRIVATE + JMod.STATIC;
 
-    private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\n/**\n" +
+    private static final String NEW_WRAPPED_INSTANCE_TEMPLATE = "\r\n     /**\n" +
+            "     * Returns a <b>stub</b> object with <b>name</b> and <b>value</b> attributes\n" +
+            "     * @return\n" +
+            "     */\n" +
+            "     public static native <D> D newWrappedInstance() /*-{\n" +
+            "        var json = \"{\\\"name\\\": \\\"\\\", \\\"value\\\": \\\"\\\"}\";\n" +
+            "        var retrieved = JSON.parse(json)\n" +
+            "        return retrieved\n" +
+            "    }-*/;\n";
+
+    private static final String SET_NAME_ON_WRAPPED_TEMPLATE = "\r\n     /**\n" +
+            "     * Set the <b>name</b> attribute of the given <b>wrapped</b> <code>D</code> with the <b>json</b> representation of the given <code>JSIName</code>\n" +
+            "     * @param wrappedObject\n" +
+            "     * @param name\n" +
+            "     */\n" +
+            "    public static native <D> void setNameOnWrapped(D wrappedObject, org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JSIName name) /*-{\n" +
+            "        wrappedObject.name = name\n" +
+            "    }-*/;";
+
+    private static final String SET_VALUE_ON_WRAPPED_TEMPLATE = "\r\n     /**\n" +
+            "     * Set the <b>value</b> attribute of the given <b>wrapped</b> <code>D</code> with the <b>json</b> representation of <b>value</b> <code>E</code>\n" +
+            "     * @param wrappedObject\n" +
+            "     * @param value\n" +
+            "     */\n" +
+            "    public static native <D, E> void setValueOnWrapped(D wrappedObject, E value) /*-{\n" +
+            "        wrappedObject.value = value\n" +
+            "    }-*/;";
+
+    private static final String GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD = "\r\n     /**\n" +
             "     * Returns a <code>JsArrayLike</code> where each element represents the <b>unwrapped</b> object (i.e. object.value) of the original one.\n" +
             "     * It the original <code>JsArrayLike</code> is <code>null</code>, returns a new, empty one\n" +
             "     * @param original\n" +
@@ -73,7 +101,7 @@ public class JsUtilsBuilder {
             "        return toReturn;\n" +
             "    }-*/;\n";
 
-    private static final String GET_NATIVE_ELEMENTS_ARRAY_METHOD = "\r\n/**\n" +
+    private static final String GET_NATIVE_ELEMENTS_ARRAY_METHOD = "\r\n     /**\n" +
             "     * Returns the original <code>JsArrayLike</code> or, ift the original <code>JsArrayLike</code> is <code>null</code>, a new, empty one\n" +
             "     * @param original\n" +
             "     * @param <D>\n" +
@@ -94,7 +122,15 @@ public class JsUtilsBuilder {
             "        return toSet;\n" +
             "    }-*/;\n";
 
-    private static final String GET_NATIVE_ARRAY_METHOD = "\r\n/**\n" +
+    private static final String GET_WRAPPED_ELEMENT_METHOD = "\r\n     public static native <D> D getWrappedElement(final Object value) /*-{\n" +
+            "        var json = \"{\\\"name\\\": \\\"\\\", \\\"value\\\": \\\"\\\"}\";\n" +
+            "        var toReturn = JSON.parse(json)\n" +
+            "        toReturn.value =  value;\n" +
+            "        return toReturn;\n" +
+            "    }-*/;\n";
+
+
+    private static final String GET_NATIVE_ARRAY_METHOD = "\r\n     /**\n" +
             "     * Helper method to create a new, empty <code>JsArrayLike</code>\n" +
             "     * @return\n" +
             "     */\n" +
@@ -127,9 +163,13 @@ public class JsUtilsBuilder {
         addAddAllMethod(jCodeModel, toPopulate, addMethod);
         addRemoveMethod(jCodeModel, toPopulate);
         addToListMethod(jCodeModel, toPopulate);
+        addNewWrappedInstance(toPopulate);
+        addSetNameOnWrappedObject(toPopulate);
+        addSetValueOnWrappedObject(toPopulate);
         addGetNativeElementsArrayMethod(toPopulate);
         addGetUnwrappedElementsArrayMethod(toPopulate);
         addGetUnwrappedElementMethod(toPopulate);
+        addGetWrappedElementMethod(toPopulate);
         addGetNativeArray(toPopulate);
         addJavaToAttributesMapMethod(jCodeModel, toPopulate);
         addNativeToAttributesMapMethod(toPopulate, jsMainPackage);
@@ -226,6 +266,25 @@ public class JsUtilsBuilder {
         return toReturn;
     }
 
+    protected static void addNewWrappedInstance(JDefinedClass jDefinedClass) {
+        log(LogLevelSetting.DEBUG, "Add 'newWrappedInstance' method...");
+        String directString = String.format(NEW_WRAPPED_INSTANCE_TEMPLATE, jDefinedClass.name());
+        jDefinedClass.direct(directString);
+    }
+
+    protected static void addSetNameOnWrappedObject(JDefinedClass jDefinedClass) {
+        log(LogLevelSetting.DEBUG, "Add 'setNameOnWrapped' method...");
+        String directString = String.format(SET_NAME_ON_WRAPPED_TEMPLATE, jDefinedClass.name());
+        jDefinedClass.direct(directString);
+    }
+
+    protected static void addSetValueOnWrappedObject(JDefinedClass jDefinedClass) {
+        log(LogLevelSetting.DEBUG, "Add 'setValueOnWrapped' method...");
+        String directString = String.format(SET_VALUE_ON_WRAPPED_TEMPLATE, jDefinedClass.name());
+        jDefinedClass.direct(directString);
+    }
+
+
     protected static void addGetUnwrappedElementsArrayMethod(JDefinedClass jsUtils) {
         log(LogLevelSetting.DEBUG, "Add 'getUnwrappedElementsArray' method...");
         jsUtils.direct(GET_UNWRAPPED_ELEMENTS_ARRAY_METHOD);
@@ -239,6 +298,11 @@ public class JsUtilsBuilder {
     protected static void addGetUnwrappedElementMethod(JDefinedClass jsUtils) {
         log(LogLevelSetting.DEBUG, "Add 'getUnwrappedElement' method...");
         jsUtils.direct(GET_UNWRAPPED_ELEMENT_METHOD);
+    }
+
+    protected static void addGetWrappedElementMethod(JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add 'getWrappedElement' method...");
+        jsUtils.direct(GET_WRAPPED_ELEMENT_METHOD);
     }
 
     protected static void addGetNativeArray(JDefinedClass jsUtils) {
