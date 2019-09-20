@@ -37,6 +37,7 @@ import com.sun.codemodel.JForLoop;
 import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
+import com.sun.codemodel.JTypeVar;
 import com.sun.codemodel.JVar;
 import jsinterop.base.Js;
 import jsinterop.base.JsArrayLike;
@@ -155,7 +156,7 @@ public class JsUtilsBuilder {
             "     * Helper method to create a new empty JavaScript object.\n" +
             "     * @return\n" +
             "     */\n" +
-            "    private static native Object getJsObject() /*-{\n" +
+            "    private static native <D> D getJsObject() /*-{\n" +
             "        return {};\n" +
             "    }-*/;\n";
 
@@ -408,9 +409,11 @@ public class JsUtilsBuilder {
         log(LogLevelSetting.DEBUG, "Add java 'fromAttributesMapMethod' method...");
         JClass narrowedMap = getQNameStringNarrowedMapClass(jCodeModel);
         final JMethod toReturn = getJMethod(jsUtils, jCodeModel.ref(Object.class), "fromAttributesMap");
+        final JTypeVar type = toReturn.generify("D");
+        toReturn.type(type);
         toReturn.param(JMod.FINAL, narrowedMap, "original");
         final JBlock block = toReturn.body();
-        final JVar mapToReturn = block.decl(JMod.FINAL, jCodeModel.ref(Object.class), "toReturn", JExpr.invoke("getJsObject"));
+        final JVar mapToReturn = block.decl(JMod.FINAL, type, "toReturn", JExpr.invoke("getJsObject"));
         block.directStatement(FROM_ATTRIBUTES_MAP_METHOD_BODY);
         block._return(mapToReturn);
         final JDocComment javadoc = toReturn.javadoc();
