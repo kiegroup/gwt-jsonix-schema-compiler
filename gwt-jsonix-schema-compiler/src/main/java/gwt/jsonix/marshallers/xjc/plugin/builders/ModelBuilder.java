@@ -35,6 +35,7 @@ import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
+import com.sun.codemodel.JType;
 import com.sun.codemodel.JVar;
 import com.sun.tools.xjc.model.CClassInfo;
 import com.sun.tools.xjc.model.CClassInfoParent;
@@ -82,8 +83,8 @@ public class ModelBuilder {
             "     * @param instance\n" +
             "     * @return\n" +
             "     */\n" +
-            "     public static native %1$s get%2$s(%3$s instance) /*-{\n" +
-            "         instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
+            "    public static native %1$s get%2$s(%3$s instance) /*-{\n" +
+            "        instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
             "        return @%4$s.JsUtils::getUnwrappedElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
             "    }-*/;\n";
 
@@ -92,8 +93,8 @@ public class ModelBuilder {
             "     * @param instance\n" +
             "     * @return\n" +
             "     */\n" +
-            "     public static native %1$s getNative%2$s(%3$s instance) /*-{\n" +
-            "         instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
+            "    public static native %1$s getNative%2$s(%3$s instance) /*-{\n" +
+            "        instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
             "        return instance.%5$s\n" +
             "    }-*/;\n";
 
@@ -102,7 +103,7 @@ public class ModelBuilder {
             "     * @param instance \n" +
             "     * @param toAdd the <b>wrapped</b> <code>%3$s</code> to add\n" +
             "     */\n" +
-            "     public static native void add%1$s(%2$s instance, %3$s toAdd) /*-{\n" +
+            "    public static native void add%1$s(%2$s instance, %3$s toAdd) /*-{\n" +
             "        instance.%5$s = @%6$s::getNative%1$s(%7$s;)(instance)\n" +
             "        return @%4$s.JsUtils::add(Ljsinterop/base/JsArrayLike;Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
             "    }-*/;\n";
@@ -112,7 +113,7 @@ public class ModelBuilder {
             "     * @param instance \n" +
             "     * @param toAdd <code>JsArrayLike</code> of <b>wrapped</b> <code>%3$s</code>s to add\n" +
             "     */\n" +
-            "     public static native void addAll%1$s(%2$s instance, JsArrayLike<? extends %3$s> toAdd) /*-{\n" +
+            "    public static native void addAll%1$s(%2$s instance, JsArrayLike<? extends %3$s> toAdd) /*-{\n" +
             "        instance.%5$s = @%6$s::getNative%1$s(%7$s;)(instance)\n" +
             "        return @%4$s.JsUtils::addAll(Ljsinterop/base/JsArrayLike;[Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
             "    }-*/;\n";
@@ -351,12 +352,14 @@ public class ModelBuilder {
         addGetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
         addSetter(jCodeModel, jDefinedClass, propertyRef, publicPropertyName, privatePropertyName, nameSpace);
         if (cPropertyInfo.isCollection() && propertyRef.getTypeParameters() != null && !propertyRef.getTypeParameters().isEmpty()) {
-            final JClass typeParameter = propertyRef.getTypeParameters().get(0);
+            final JType typeParameter = propertyRef.getTypeParameters().get(0).unboxify();
             String propertyType = typeParameter.name();
             addStaticJsArrayGetter(jDefinedClass, propertyRef.name(), publicPropertyName, privatePropertyName, packageName);
             addStaticNativeJsArrayGetter(jDefinedClass, propertyRef.name(), publicPropertyName, privatePropertyName, packageName);
             addStaticJsArrayAdd(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
-            addStaticJsArrayAddAll(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
+            if (!typeParameter.isPrimitive()) {
+                addStaticJsArrayAddAll(jDefinedClass, propertyType, publicPropertyName, privatePropertyName, packageName);
+            }
             addStaticJsArrayRemove(jDefinedClass, publicPropertyName, privatePropertyName, packageName);
         }
     }
