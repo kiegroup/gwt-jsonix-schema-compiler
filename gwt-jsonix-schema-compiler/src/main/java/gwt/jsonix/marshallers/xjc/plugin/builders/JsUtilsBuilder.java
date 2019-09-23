@@ -163,7 +163,7 @@ public class JsUtilsBuilder {
     private static final String PUT_TO_JS_OBJECT_METHOD = "\r\n    /**\n" +
             "     * Helper method to add a value to a JavaScript object at the associated key.\n" +
             "     */\n" + "" +
-            "    private static native void putToJavaScriptObject(final Object jso, final String key, final String value) /*-{\n" +
+            "    private static native <D, K, V> void putToJavaScriptObject(final D jso, final K key, final V value) /*-{\n" +
             "        jso[key] = value;\n" +
             "    }-*/;\n";
 
