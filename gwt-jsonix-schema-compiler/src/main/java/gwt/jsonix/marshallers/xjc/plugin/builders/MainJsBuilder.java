@@ -77,15 +77,19 @@ public class MainJsBuilder {
         String unmarshallMethodName = "unmarshall";
         JClass firstParameterRef = toPopulate.ref(String.class);
         String firstParameterName = "xmlString";
+        String secondParameterName = "dynamicNamespace";
+        JClass secondParameterRef = toPopulate.ref(String.class);
         addCallbackMethod(toPopulate, jDefinedClass, unmarshallMethodName, firstParameterRef,
-                          firstParameterName, callbackRef);
+                          firstParameterName, secondParameterRef, secondParameterName, callbackRef);
     }
 
     protected static void addMarshall(JCodeModel toPopulate, JDefinedClass jDefinedClass, JClass firstParameterRef, JClass callbackRef) {
         String marshallMethodName = "marshall";
         String firstParameterName = StringUtils.uncapitalize(firstParameterRef.name());
+        String secondParameterName = "dynamicNamespace";
+        JClass secondParameterRef = toPopulate.ref(String.class);
         addCallbackMethod(toPopulate, jDefinedClass, marshallMethodName, firstParameterRef,
-                          firstParameterName, callbackRef);
+                          firstParameterName, secondParameterRef, secondParameterName, callbackRef);
     }
 
     /**
@@ -104,6 +108,29 @@ public class MainJsBuilder {
         String callbackPropertyName = StringUtils.uncapitalize(callbackRef.name());
         JMethod method = jDefinedClass.method(mod, Void.TYPE, methodName);
         method.param(firstParameterRef, firstParameterName);
+        method.param(callbackRef, callbackPropertyName);
+        method.annotate(toPopulate.ref(JsMethod.class));
+    }
+
+    /**
+     * @param toPopulate
+     * @param jDefinedClass
+     * @param methodName
+     * @param firstParameterRef
+     * @param firstParameterName
+     * @param callbackRef
+     */
+    protected static void addCallbackMethod(JCodeModel toPopulate, JDefinedClass jDefinedClass, String methodName,
+                                            JClass firstParameterRef,
+                                            String firstParameterName,
+                                            JClass secondParameterRef,
+                                            String secondParameterName,
+                                            JClass callbackRef) {
+        int mod = JMod.PUBLIC + JMod.FINAL + JMod.STATIC + JMod.NATIVE;
+        String callbackPropertyName = StringUtils.uncapitalize(callbackRef.name());
+        JMethod method = jDefinedClass.method(mod, Void.TYPE, methodName);
+        method.param(firstParameterRef, firstParameterName);
+        method.param(secondParameterRef, secondParameterName);
         method.param(callbackRef, callbackPropertyName);
         method.annotate(toPopulate.ref(JsMethod.class));
     }
