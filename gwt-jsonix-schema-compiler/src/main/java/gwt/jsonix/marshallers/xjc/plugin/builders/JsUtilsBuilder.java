@@ -95,7 +95,6 @@ public class JsUtilsBuilder {
             "            toReturn = original.map(function (arrayItem) {\n" +
             "                var retrieved = arrayItem.value\n" +
             "                var toSet = retrieved == null ? arrayItem : retrieved\n" +
-            "                console.log(toSet);\n" +
             "                return toSet;\n" +
             "            });\n" +
             "        }\n" +
@@ -119,7 +118,6 @@ public class JsUtilsBuilder {
     private static final String GET_UNWRAPPED_ELEMENT_METHOD = "\r\n     public static native Object getUnwrappedElement(final Object original) /*-{\n" +
             "        var toReturn = original.value;\n" +
             "        var toSet = toReturn == null ? original : toReturn;\n" +
-            "        console.log(toSet);\n" +
             "        return toSet;\n" +
             "    }-*/;\n";
 
