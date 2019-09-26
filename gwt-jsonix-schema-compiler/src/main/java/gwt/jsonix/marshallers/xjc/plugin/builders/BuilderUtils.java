@@ -209,7 +209,7 @@ public class BuilderUtils {
                                           final String publicPropertyName,
                                           final String privatePropertyName) {
         String getterMethodName = "get" + publicPropertyName;
-        int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;
+        int mod = JMod.PUBLIC /*+ JMod.FINAL*/ + JMod.NATIVE;
         JMethod getterMethod = jDefinedClass.method(mod, propertyRef, getterMethodName);
         JDocComment getterComment = getterMethod.javadoc();
         String commentString = "Native getter for <b>" + privatePropertyName + "</b>";

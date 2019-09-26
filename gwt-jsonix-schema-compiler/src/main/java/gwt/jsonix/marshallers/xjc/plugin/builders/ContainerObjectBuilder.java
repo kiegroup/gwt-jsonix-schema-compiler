@@ -87,7 +87,7 @@ public class ContainerObjectBuilder {
     protected static void addNameProperty(JCodeModel jCodeModel, JDefinedClass toPopulate) {
         log(LogLevelSetting.DEBUG, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()));
         JClass parameterRef = jCodeModel.ref(String.class);
-        addNativeGetter(jCodeModel, toPopulate, parameterRef, "name", "name");
+        addNativeGetter(jCodeModel, toPopulate, parameterRef, "Name", "name");
     }
 
     protected static void addElementProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, String elementName, JClass elementClass) {
