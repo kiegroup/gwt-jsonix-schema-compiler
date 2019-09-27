@@ -28,6 +28,7 @@ import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JCommentPart;
+import com.sun.codemodel.JCommentPart;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JEnumConstant;
@@ -55,6 +56,7 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import jsinterop.base.JsArrayLike;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 import org.jvnet.jaxb2_commons.plugin.inheritance.Customizations;
 import org.jvnet.jaxb2_commons.plugin.inheritance.ExtendsClass;
@@ -68,86 +70,13 @@ import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeG
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeSetter;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.getJavaRef;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.ClassNameHelper.getJsInteropTypeName;
 import static org.jvnet.jaxb2_commons.plugin.inheritance.Customizations.EXTENDS_ELEMENT_NAME;
 
 /**
  * Actual builder for <b>JSInterop</b> models
  */
 public class ModelBuilder {
-
-//    protected static final String NEW_INSTANCE_TEMPLATE = "\r\n    public static native %1$s newInstance() /*-{\n" +
-//            "        var json = \"{\\\"TYPE_NAME\\\": \\\"%2$s\\\"}\";\n" +
-//            "        var retrieved = JSON.parse(json)\n" +
-//            "        return retrieved\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String INSTANCE_OF_TEMPLATE = "\r\n    public static native boolean instanceOf(Object instance) /*-{\n" +
-//            "       return instance.TYPE_NAME != null && instance.TYPE_NAME === \"%1$s\"\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String GET_JSARRAY_TEMPLATE = "\r\n    /**\n" +
-//            "     * Returns a <code>%1$s</code> where each element represents the <b>unwrapped</b> object (i.e. object.value) of the original one\n" +
-//            "     * @param instance\n" +
-//            "     * @return\n" +
-//            "     */\n" +
-//            "    public static native %1$s get%2$s(%3$s instance) /*-{\n" +
-//            "        instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
-//            "        return @%4$s.JsUtils::getUnwrappedElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String GET_NATIVE_JSARRAY_TEMPLATE = "\r\n    /**\n" +
-//            "     * Returns a <code>%1$s</code> where each element represents the original <b>wrapped</b> object (i.e. the whole object)\n" +
-//            "     * @param instance\n" +
-//            "     * @return\n" +
-//            "     */\n" +
-//            "    public static native %1$s getNative%2$s(%3$s instance) /*-{\n" +
-//            "        instance.%5$s = @org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JsUtils::getNativeElementsArray(Ljsinterop/base/JsArrayLike;)(instance.%5$s)\n" +
-//            "        return instance.%5$s\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String ADD_TO_JSARRAY_TEMPLATE = "\r\n    /**\n" +
-//            "     * Add a <b>wrapped</b> representation of <code>%3$s</code> to <code>%2$s.%5$s</code> \n" +
-//            "     * @param instance \n" +
-//            "     * @param toAdd the <b>wrapped</b> <code>%3$s</code> to add\n" +
-//            "     */\n" +
-//            "    public static native void add%1$s(%2$s instance, %3$s toAdd) /*-{\n" +
-//            "        instance.%5$s = @%6$s::getNative%1$s(%7$s;)(instance)\n" +
-//            "        return @%4$s.JsUtils::add(Ljsinterop/base/JsArrayLike;Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String ADDALL_TO_JSARRAY_TEMPLATE = "\r\n    /**\n" +
-//            "     * Add the <b>wrapped</b> representations of all given <code>%3$s</code>s to <code>%2$s.%5$s</code>\n" +
-//            "     * @param instance \n" +
-//            "     * @param toAdd <code>JsArrayLike</code> of <b>wrapped</b> <code>%3$s</code>s to add\n" +
-//            "     */\n" +
-//            "    public static native void addAll%1$s(%2$s instance, JsArrayLike<? extends %3$s> toAdd) /*-{\n" +
-//            "        instance.%5$s = @%6$s::getNative%1$s(%7$s;)(instance)\n" +
-//            "        return @%4$s.JsUtils::addAll(Ljsinterop/base/JsArrayLike;[Ljava/lang/Object;)(instance.%5$s, toAdd)\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String REMOVE_JSARRAY_TEMPLATE = "\r\n    public static native void remove%1$s(%2$s instance, int index) /*-{\n" +
-//            "        instance.%4$s = @%5$s::getNative%1$s(%6$s;)(instance)\n" +
-//            "        return @%3$s.JsUtils::remove(Ljsinterop/base/JsArrayLike;I)(instance.%4$s, index)\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String GET_OTHER_ATTRIBUTES_TEMPLATE = "\r\n    public static native Map<QName, String> getOtherAttributesMap(final %1$s instance) /*-{\n" +
-//            "        return @%2$s.JsUtils::toAttributesMap(Ljava/lang/Object;)(instance.otherAttributes)\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String SET_OTHER_ATTRIBUTES_TEMPLATE = "\r\n    public static native void setOtherAttributesMap(final %1$s instance, final Map<QName, String> attributes) /*-{\n" +
-//            "        var otherAttributes = @%2$s.JsUtils::fromAttributesMap(Ljava/util/Map;)(attributes);\n" +
-//            "        instance.otherAttributes = otherAttributes;\n" +
-//            "    }-*/;\n";
-//
-//    protected static final String GET_JSINAME_TEMPLATE = "\r\n    public static native %1$s getJSIName()/*-{\n" +
-//            "        var json = \"{\\\"namespaceURI\\\": \\\"%2$s\\\"," +
-//            " \\\"localPart\\\": \\\"%3$s\\\"," +
-//            " \\\"prefix\\\": \\\"%4$s\\\"," +
-//            " \\\"key\\\": \\\"{%2$s}%3$s\\\"," +
-//            " \\\"string\\\": \\\"{%2$s}%4$s:%3$s\\\"}\";\n" +
-//            "        var toReturn = JSON.parse(json)\n" +
-//            "        return toReturn\n" +
-//            "}-*/;";
 
     private ModelBuilder() {
     }
@@ -209,7 +138,7 @@ public class ModelBuilder {
         JDocComment comment = jDefinedClass.javadoc();
         String commentString = "JSInterop adapter for <code>" + nameSpace + "</code>";
         comment.append(commentString);
-        String jsTypeName = "JsInterop__ConstructorAPI__DMN__JSI" + shortClassName;
+        String jsTypeName = getJsInteropTypeName(shortClassName);
 
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
                 .param("namespace", nameSpaceExpression)
@@ -341,6 +270,7 @@ public class ModelBuilder {
         }
         body._return(toReturn);
     }
+
 
     protected static void addGetTypeNameProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
         log(LogLevelSetting.DEBUG, String.format("Add getTYPENAME property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));

@@ -169,6 +169,18 @@ public class JsUtilsBuilder {
             "        return instance.TYPE_NAME\n" +
             "    }-*/;\n";
 
+    protected static final String GET_JSI_NAME_TEMPLATE = "\r\n    " +
+            "public static native JSIName getJSIName(final String namespaceURI,\n" +
+            "                                            final String localPart,\n" +
+            "                                            final String prefix)/*-{\n" +
+            "        var json = \"{\\\"namespaceURI\\\": \\\"\" + namespaceURI + \"\\\"," +
+            " \\\"localPart\\\": \\\"\" + localPart + \"\\\"," +
+            " \\\"prefix\\\": \\\"\" + prefix + \"\\\"," +
+            " \\\"key\\\": \\\"{\" + namespaceURI + \"}\" + localPart + \"\\\"," +
+            " \\\"string\\\": \\\"{\" + namespaceURI + \"}\" + prefix + \":\" + localPart + \"\\\"}\";\n" +
+            "        return JSON.parse(json);\n" +
+            "\r\n}-*/;";
+
     private JsUtilsBuilder() {
     }
 
@@ -200,9 +212,16 @@ public class JsUtilsBuilder {
         addNativeGetJsObjectMethod(toPopulate);
         addNativePutToJsObjectMethod(toPopulate);
         addGetTypeName(toPopulate);
+        addGetJSIName(toPopulate);
+    }
+
+    protected static void addGetJSIName(final JDefinedClass jDefinedClass) {
+        log(LogLevelSetting.DEBUG, "Add native 'getJSIName' method...");
+        jDefinedClass.direct(GET_JSI_NAME_TEMPLATE);
     }
 
     protected static void addGetTypeName(final JDefinedClass jDefinedClass) {
+        log(LogLevelSetting.DEBUG, "Add native 'getTypeName' method...");
         jDefinedClass.direct(GET_TYPE_NAME);
     }
 
