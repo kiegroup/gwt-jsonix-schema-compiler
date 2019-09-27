@@ -82,7 +82,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     @Override
-    public int parseArgument(Options opt, String[] args, int i)
+    public int parseArgument(final Options opt, final String[] args, final int i)
             throws BadCommandLineException {
 
         final PartialCmdLineParser cmdLineParser = new PartialCmdLineParser(
@@ -95,19 +95,19 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     @Override
-    public boolean run(Outline outline, Options opt, ErrorHandler errorHandler) throws SAXException {
-        super.run(outline, opt, errorHandler);
+    public boolean run(final Outline outline, final Options options, final ErrorHandler errorHandler) throws SAXException {
+        super.run(outline, options, errorHandler);
         log(LogLevelSetting.DEBUG, "run");
         try {
-            Model model = outline.getModel();
-            JCodeModel jCodeModel = new JCodeModel();
+            final Model model = outline.getModel();
+            final JCodeModel jCodeModel = new JCodeModel();
             final CodeWriter codeWriter = createCodeWriter(model, getSettings());
             final JDefinedClass jsiNameClass = JSINameBuilder.generateJSINameClass(jCodeModel, settings.getJsMainPackage());
             final JDefinedClass jsUtilsClass = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, settings.getJsMainPackage());
-            Map<String, String> packageModuleMap = getPackageModuleMap(model);
-            Map<String, JClass> definedClassesMap = new HashMap<>();
+            final Map<String, String> packageModuleMap = getPackageModuleMap(model);
+            final Map<String, JClass> definedClassesMap = new HashMap<>();
             ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap, jsUtilsClass._package().name(), jsiNameClass);
-            Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
+            final Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
             final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, topLevelElementsMap, jCodeModel/*, jsiNameClass, jsUtilsClass*/);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);
             MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, jCodeModel);
@@ -120,17 +120,19 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     }
 
     @Override
-    public void postProcessModel(Model model, ErrorHandler errorHandler) {
+    public void postProcessModel(final Model model, final ErrorHandler errorHandler) {
         //
     }
 
-    protected Map<String, Map<String, JClass>> getTopLevelElementsMap(Set<String> packageNames, final Map<String, JClass> definedClassesMap, Iterable<? extends CElementInfo> allElements) {
+    protected Map<String, Map<String, JClass>> getTopLevelElementsMap(final Set<String> packageNames,
+                                                                      final Map<String, JClass> definedClassesMap,
+                                                                      final Iterable<? extends CElementInfo> allElements) {
         log(LogLevelSetting.DEBUG, "getTopLevelElementsMap");
-        Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
+        final Spliterator<? extends CElementInfo> spliterator = allElements.spliterator();
         final List<? extends CElementInfo> allElementsList = StreamSupport.stream(spliterator, false).collect(Collectors.toList());
-        Map<String, Map<String, JClass>> toReturn = new HashMap<>();
+        final Map<String, Map<String, JClass>> toReturn = new HashMap<>();
         for (String packageName : packageNames) {
-            Map<String, JClass> toPut = allElementsList.stream()
+            final Map<String, JClass> toPut = allElementsList.stream()
                     .filter(cElementInfo -> Objects.equals(packageName, cElementInfo._package().name()))
                     .filter(cElementInfo -> definedClassesMap.containsKey(cElementInfo.getContentType().getType().fullName()))
                     .collect(Collectors.toMap(cElementInfo -> cElementInfo.getElementName().getLocalPart(),
@@ -140,9 +142,9 @@ public class JsonixGWTPlugin extends JsonixPlugin {
         return toReturn;
     }
 
-    protected Map<String, String> getPackageModuleMap(Model model) {
+    protected Map<String, String> getPackageModuleMap(final Model model) {
         log(LogLevelSetting.DEBUG, "getPackageModuleMap");
-        GWTSettings gwtSettings = getSettings();
+        final GWTSettings gwtSettings = getSettings();
         final DefaultJsonixContext context = new DefaultJsonixContext();
         final OutputConfiguration defaultOutputConfiguration = new OutputConfiguration(
                 gwtSettings.getDefaultNaming().getName(),
@@ -151,7 +153,9 @@ public class JsonixGWTPlugin extends JsonixPlugin {
                 .isGenerateJsonSchema() ? new JsonSchemaConfiguration(
                 JsonSchemaConfiguration.STANDARD_FILE_NAME_PATTERN) : null;
         final ModulesConfigurationUnmarshaller customizationHandler = new ModulesConfigurationUnmarshaller(context);
-        ModulesConfiguration modulesConfiguration = customizationHandler.unmarshal(model, defaultOutputConfiguration, defaultJsonSchemaConfiguration);
+        final ModulesConfiguration modulesConfiguration = customizationHandler.unmarshal(model,
+                                                                                         defaultOutputConfiguration,
+                                                                                         defaultJsonSchemaConfiguration);
         return modulesConfiguration.getMappingConfigurations().stream().collect(Collectors.toMap(MappingConfiguration::getPackage, MappingConfiguration::getName));
     }
 }
