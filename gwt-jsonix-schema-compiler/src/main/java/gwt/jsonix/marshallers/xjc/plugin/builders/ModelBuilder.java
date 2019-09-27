@@ -249,6 +249,7 @@ public class ModelBuilder {
         String getterMethodName = "getJSIName";
         int mod = JMod.PUBLIC + JMod.STATIC;
         JMethod getterMethod = jDefinedClass.method(mod, jsiNameClass, getterMethodName);
+        getterMethod.annotate(JsOverlay.class);
         JDocComment getterComment = getterMethod.javadoc();
         String commentString = "Getter for specific <code>JSIName</code>";
         getterComment.append(commentString);
@@ -260,7 +261,7 @@ public class ModelBuilder {
         body.add(toReturn.invoke("setNamespaceURI").arg(typeName.getNamespaceURI()));
         body.add(toReturn.invoke("setLocalPart").arg(typeName.getLocalPart()));
         body.add(toReturn.invoke("setPrefix").arg(typeName.getPrefix()));
-        body.add(toReturn.invoke("setKey").arg(typeName.getNamespaceURI()));
+        body.add(toReturn.invoke("setKey").arg("{" + typeName.getNamespaceURI() + "}"));
         if (!StringUtils.isEmpty(typeName.getPrefix())) {
             body.add(toReturn.invoke("setString").arg("{" + typeName.getNamespaceURI() + "}" + typeName.getPrefix() + ":" + typeName.getLocalPart()));
         } else {
@@ -268,7 +269,6 @@ public class ModelBuilder {
         }
         body._return(toReturn);
     }
-
 
     protected static void addGetTypeNameProperty(JCodeModel jCodeModel, JDefinedClass jDefinedClass) {
         log(LogLevelSetting.DEBUG, String.format("Add getTYPENAME property to object %1$s.%2$s ...", jDefinedClass._package().name(), jDefinedClass.name()));
