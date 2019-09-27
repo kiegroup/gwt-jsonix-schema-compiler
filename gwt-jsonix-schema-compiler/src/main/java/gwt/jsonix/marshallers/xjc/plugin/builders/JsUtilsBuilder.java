@@ -334,7 +334,7 @@ public class JsUtilsBuilder {
         jForLoop.update(i.incr());
         final JBlock forLoopBody = jForLoop.body();
         final JVar toAdd = forLoopBody.decl(JMod.FINAL, genericT, "toAdd", jCodeModel.ref(Js.class).staticInvoke("uncheckedCast").arg(listParameter.invoke("get").arg(i)));
-        forLoopBody.add(listToReturn.invoke("add").arg(toAdd));
+        forLoopBody.add(listToReturn.invoke("setAt").arg(listToReturn.invoke("getLength")).arg(toAdd));
         block._return(listToReturn);
         return toReturn;
     }
