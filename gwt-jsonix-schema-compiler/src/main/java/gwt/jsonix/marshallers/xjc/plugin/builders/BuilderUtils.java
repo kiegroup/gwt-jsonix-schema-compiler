@@ -31,9 +31,11 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JExpression;
+import com.sun.codemodel.JForLoop;
 import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
+import com.sun.codemodel.JType;
 import com.sun.codemodel.JTypeVar;
 import com.sun.codemodel.JVar;
 import com.sun.codemodel.writer.FileCodeWriter;
@@ -120,7 +122,6 @@ public class BuilderUtils {
         getterComment.append("READ-ONLY getter for <b>" + privatePropertyName + "</b> as a {@link List}");
         getterCommentReturnPart.add("The <b>" + privatePropertyName + "</b> mapped as a {@link List}");
 
-
         final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
         final JInvocation getUnwrappedElementsArrayInvocation = jsUtilsClass.staticInvoke("getUnwrappedElementsArray").arg(nativeGetterInvocation);
         final JInvocation list = jsUtilsClass.staticInvoke("toList").arg(getUnwrappedElementsArrayInvocation);
@@ -177,8 +178,15 @@ public class BuilderUtils {
         final String getterMethodName = "add" + publicPropertyName;
         final int mod = JMod.PUBLIC + JMod.FINAL;
         final JMethod addMethod = jDefinedClass.method(mod, Void.TYPE, getterMethodName);
-        final JTypeVar typeParam = addMethod.generify("D", propertyRef);
-        final JVar elementParam = addMethod.param(JMod.FINAL, typeParam, "element");
+
+        JVar elementParam;
+        if (!propertyRef.unboxify().isPrimitive()) {
+            final JTypeVar typeParam = addMethod.generify("D", propertyRef);
+            elementParam = addMethod.param(JMod.FINAL, typeParam, "element");
+        } else {
+            final JType typeParam = propertyRef.unboxify();
+            elementParam = addMethod.param(JMod.FINAL, typeParam, "element");
+        }
         final JDocComment addMethodComment = addMethod.javadoc();
         final JBlock body = addMethod.body();
 
@@ -207,8 +215,7 @@ public class BuilderUtils {
         final String addAllMethodName = "addAll" + publicPropertyName;
         final int mod = JMod.PUBLIC + JMod.FINAL;
         final JMethod addAllMethod = jDefinedClass.method(mod, Void.TYPE, addAllMethodName);
-        final JTypeVar typeParam = addAllMethod.generify("D", propertyRef);
-        final JVar elementsParam = addAllMethod.varParam(typeParam, "elements");
+
         final JDocComment addAllComment = addAllMethod.javadoc();
         final JBlock body = addAllMethod.body();
 
@@ -218,11 +225,29 @@ public class BuilderUtils {
         final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
         final JInvocation nativeSetterInvocation = JExpr.invoke("setNative" + publicPropertyName);
         final JExpression isNullNativeArray = nativeGetterInvocation.eq(JExpr._null());
-        final JInvocation getAddAllInvocation = jsUtilsClass.staticInvoke("addAll").arg(nativeGetterInvocation).arg(elementsParam);
         final JInvocation nativeArray = jsUtilsClass.staticInvoke("getNativeArray");
 
         body._if(isNullNativeArray)._then().add(nativeSetterInvocation.arg(nativeArray));
-        body.add(getAddAllInvocation);
+
+        if (!propertyRef.unboxify().isPrimitive()) {
+            //Invoke JsUtils.addAll(..) method if property is an object type
+            final JType typeParam = addAllMethod.generify("D", propertyRef);
+            final JVar elementsParam = addAllMethod.varParam(typeParam, "elements");
+            elementsParam.mods().setFinal(true);
+            final JInvocation getAddAllInvocation = jsUtilsClass.staticInvoke("addAll").arg(nativeGetterInvocation).arg(elementsParam);
+            body.add(getAddAllInvocation);
+        } else {
+            //Add each element individually to avoid boxing primitive types
+            final JType typeParam = propertyRef.unboxify();
+            final JVar elementsParam = addAllMethod.varParam(typeParam, "elements");
+            elementsParam.mods().setFinal(true);
+            final JForLoop loop = body._for();
+            final JVar iVar = loop.init(jCodeModel.INT, "i", JExpr.lit(0));
+            loop.test(iVar.lt(JExpr.ref(elementsParam, "length")));
+            loop.update(iVar.incr());
+            final JBlock loopBody = loop.body();
+            loopBody.invoke("add" + publicPropertyName).arg(elementsParam.component(iVar));
+        }
 
         return addAllMethod.annotate(jCodeModel.ref(JsOverlay.class));
     }
