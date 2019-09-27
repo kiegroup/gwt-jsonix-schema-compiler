@@ -184,6 +184,7 @@ public class JsUtilsBuilder {
         addAddAllMethod(jCodeModel, toPopulate, addMethod);
         addRemoveMethod(jCodeModel, toPopulate);
         addToListMethod(jCodeModel, toPopulate);
+        addToJsArrayLikeMethod(jCodeModel, toPopulate);
         addNewWrappedInstance(toPopulate);
         addSetNameOnWrappedObject(toPopulate);
         addSetValueOnWrappedObject(toPopulate);
@@ -290,6 +291,30 @@ public class JsUtilsBuilder {
         jForLoop.update(i.incr());
         final JBlock forLoopBody = jForLoop.body();
         final JVar toAdd = forLoopBody.decl(JMod.FINAL, genericT, "toAdd", jCodeModel.ref(Js.class).staticInvoke("uncheckedCast").arg(jsArrayLikeParameter.invoke("getAt").arg(i)));
+        forLoopBody.add(listToReturn.invoke("add").arg(toAdd));
+        block._return(listToReturn);
+        return toReturn;
+    }
+
+    protected static JMethod addToJsArrayLikeMethod(JCodeModel jCodeModel, JDefinedClass jsUtils) {
+        log(LogLevelSetting.DEBUG, "Add 'toJsArrayLike' method...");
+        final JClass genericT = getGenericT(jCodeModel);
+        JClass narrowedJsArrayLike = getJsArrayNarrowedClass(jCodeModel);
+        JClass rawArrayListClass = jCodeModel.ref(List.class);
+        JClass listField = rawArrayListClass.narrow(genericT);
+
+        final JMethod toReturn = getGenerifiedJMethod(jsUtils, narrowedJsArrayLike, "toJsArrayLike");
+        final JVar listParameter = toReturn.param(JMod.FINAL, listField, "list");
+        final JBlock block = toReturn.body();
+
+        final JVar listToReturn = block.decl(JMod.FINAL, narrowedJsArrayLike, "toReturn", JExpr.invoke("getNativeArray"));
+        final JConditional nonNull = block._if(jCodeModel.ref(Objects.class).staticInvoke("nonNull").arg(listParameter));
+        final JForLoop jForLoop = nonNull._then()._for();
+        final JVar i = jForLoop.init(jCodeModel.INT, "i", JExpr.lit(0));
+        jForLoop.test(i.lt(listParameter.invoke("size")));
+        jForLoop.update(i.incr());
+        final JBlock forLoopBody = jForLoop.body();
+        final JVar toAdd = forLoopBody.decl(JMod.FINAL, genericT, "toAdd", jCodeModel.ref(Js.class).staticInvoke("uncheckedCast").arg(listParameter.invoke("get").arg(i)));
         forLoopBody.add(listToReturn.invoke("add").arg(toAdd));
         block._return(listToReturn);
         return toReturn;

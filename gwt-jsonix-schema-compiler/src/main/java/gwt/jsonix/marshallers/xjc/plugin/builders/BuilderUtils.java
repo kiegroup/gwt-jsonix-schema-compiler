@@ -92,12 +92,22 @@ public class BuilderUtils {
         }
     }
 
-    public static JAnnotationUse addDefaultGetter(final JCodeModel jCodeModel,
-                                                  final JDefinedClass jDefinedClass,
-                                                  final JDefinedClass jsUtilsClass,
-                                                  final JClass propertyRef,
-                                                  final String publicPropertyName,
-                                                  final String privatePropertyName) {
+    /**
+     * Method used to <b>get</b> List
+     * @param jCodeModel
+     * @param jDefinedClass
+     * @param jsUtilsClass
+     * @param propertyRef
+     * @param publicPropertyName
+     * @param privatePropertyName
+     * @return
+     */
+    public static JAnnotationUse addListGetter(final JCodeModel jCodeModel,
+                                               final JDefinedClass jDefinedClass,
+                                               final JDefinedClass jsUtilsClass,
+                                               final JClass propertyRef,
+                                               final String publicPropertyName,
+                                               final String privatePropertyName) {
 
         final String getterMethodName = "get" + publicPropertyName;
         final int mod = JMod.PUBLIC + JMod.FINAL;
@@ -110,6 +120,7 @@ public class BuilderUtils {
         getterComment.append("READ-ONLY getter for <b>" + privatePropertyName + "</b> as a {@link List}");
         getterCommentReturnPart.add("The <b>" + privatePropertyName + "</b> mapped as a {@link List}");
 
+
         final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
         final JInvocation getUnwrappedElementsArrayInvocation = jsUtilsClass.staticInvoke("getUnwrappedElementsArray").arg(nativeGetterInvocation);
         final JInvocation list = jsUtilsClass.staticInvoke("toList").arg(getUnwrappedElementsArrayInvocation);
@@ -117,6 +128,43 @@ public class BuilderUtils {
         body._return(list);
 
         return getterMethod.annotate(jCodeModel.ref(JsOverlay.class));
+    }
+
+    /**
+     * Method used to set <code>List</code>
+     * @param jCodeModel
+     * @param jDefinedClass
+     * @param jsUtilsClass
+     * @param propertyRef
+     * @param publicPropertyName
+     * @param privatePropertyName
+     * @return
+     */
+    public static JAnnotationUse addListSetter(final JCodeModel jCodeModel,
+                                               final JDefinedClass jDefinedClass,
+                                               final JDefinedClass jsUtilsClass,
+                                               final JClass propertyRef,
+                                               final String publicPropertyName,
+                                               final String privatePropertyName) {
+
+        final String setterMethodName = "set" + publicPropertyName;
+        final int mod = JMod.PUBLIC + JMod.FINAL;
+        final JClass listPropertyRef = jCodeModel.ref(List.class).narrow(propertyRef);
+        final JMethod setterMethod = jDefinedClass.method(mod, void.class, setterMethodName);
+        String parameterName = privatePropertyName + "Param";
+        final JVar setterParam = setterMethod.param(listPropertyRef, parameterName);
+
+        final JDocComment setterComment = setterMethod.javadoc();
+        final JCommentPart setterCommentReturnPart = setterComment.addParam(parameterName);
+        final JBlock body = setterMethod.body();
+
+        setterComment.append("Setter for <b>" + privatePropertyName + "</b> as a {@link List}");
+        setterCommentReturnPart.add("The <b>" + privatePropertyName + "</b> mapped as a {@link List}");
+
+        final JInvocation toJsArrayLikeInvocation = jsUtilsClass.staticInvoke("toJsArrayLike").arg(setterParam);
+        body.invoke("setNative" + publicPropertyName).arg(toJsArrayLikeInvocation);
+
+        return setterMethod.annotate(jCodeModel.ref(JsOverlay.class));
     }
 
     public static JAnnotationUse addAddMethod(final JCodeModel jCodeModel,
@@ -138,7 +186,7 @@ public class BuilderUtils {
         addMethodComment.addParam("element to be appended to <b>" + privatePropertyName + "</b>");
 
         final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
-        final JInvocation nativeSetterInvocation = JExpr.invoke("set" + publicPropertyName);
+        final JInvocation nativeSetterInvocation = JExpr.invoke("setNative" + publicPropertyName);
         final JExpression isNullNativeArray = nativeGetterInvocation.eq(JExpr._null());
         final JInvocation getAddInvocation = jsUtilsClass.staticInvoke("add").arg(nativeGetterInvocation).arg(elementParam);
         final JInvocation nativeArray = jsUtilsClass.staticInvoke("getNativeArray");
@@ -168,7 +216,7 @@ public class BuilderUtils {
         addAllComment.addParam("elements to be appended to <b>" + privatePropertyName + "</b>");
 
         final JInvocation nativeGetterInvocation = JExpr.invoke("getNative" + publicPropertyName);
-        final JInvocation nativeSetterInvocation = JExpr.invoke("set" + publicPropertyName);
+        final JInvocation nativeSetterInvocation = JExpr.invoke("setNative" + publicPropertyName);
         final JExpression isNullNativeArray = nativeGetterInvocation.eq(JExpr._null());
         final JInvocation getAddAllInvocation = jsUtilsClass.staticInvoke("addAll").arg(nativeGetterInvocation).arg(elementsParam);
         final JInvocation nativeArray = jsUtilsClass.staticInvoke("getNativeArray");
@@ -209,7 +257,7 @@ public class BuilderUtils {
                                           final String publicPropertyName,
                                           final String privatePropertyName) {
         String getterMethodName = "get" + publicPropertyName;
-        int mod = JMod.PUBLIC /*+ JMod.FINAL*/ + JMod.NATIVE;
+        int mod = JMod.PUBLIC + JMod.NATIVE;
         JMethod getterMethod = jDefinedClass.method(mod, propertyRef, getterMethodName);
         JDocComment getterComment = getterMethod.javadoc();
         String commentString = "Native getter for <b>" + privatePropertyName + "</b>";
@@ -221,7 +269,7 @@ public class BuilderUtils {
         return getterMethod;
     }
 
-    public static JAnnotationUse addSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
+    public static JAnnotationUse addNativeSetter(JCodeModel jCodeModel, JDefinedClass jDefinedClass, JClass propertyRef, String
             publicPropertyName, String privatePropertyName) {
         String setterMethodName = "set" + publicPropertyName;
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.NATIVE;

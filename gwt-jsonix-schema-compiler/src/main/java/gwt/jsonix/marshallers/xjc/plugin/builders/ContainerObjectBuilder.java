@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeGetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeSetter;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 
 /**
@@ -94,6 +94,6 @@ public class ContainerObjectBuilder {
         log(LogLevelSetting.DEBUG, String.format("Add %1$s accessors to object %2$s.%3$s ...", elementName, toPopulate._package().name(), toPopulate.name()));
         String publicName = StringUtils.capitalize(elementName);
         addNativeGetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
-        addSetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
+        addNativeSetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
     }
 }

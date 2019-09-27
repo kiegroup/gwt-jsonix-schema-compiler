@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeGetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeSetter;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 
 /**
@@ -64,7 +64,7 @@ public class JSINameBuilder {
 
     protected static void addField(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String field) {
         addNativeGetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
-        addSetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
+        addNativeSetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
     }
 
     protected static JDefinedClass getJSINameClass(JCodeModel jCodeModel, String jsMainPackage) throws
