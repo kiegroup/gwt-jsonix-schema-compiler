@@ -7,11 +7,11 @@
   <parent>
     <groupId>org.kogito</groupId>
     <artifactId>gwt-jsonix-marshallers-project</artifactId>
-    <version>1.0b</version>
+    <version>1.0c</version>
   </parent>
   <artifactId>gwt-jsonix-marshallers-demo</artifactId>
   <packaging>war</packaging>
-  <version>1.0b</version>
+  <version>1.0c</version>
 
   <properties>
     <gwt.helper.includes>Marshaller</gwt.helper.includes>
@@ -60,7 +60,7 @@
     <dependency>
       <groupId>org.kogito</groupId>
       <artifactId>gwt-jsonix-marshaller</artifactId>
-      <version>1.0b</version>
+      <version>1.0c</version>
     </dependency>
   </dependencies>
 

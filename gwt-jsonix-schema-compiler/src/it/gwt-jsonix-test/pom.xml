@@ -19,7 +19,7 @@
       <dependency>
         <groupId>org.kogito</groupId>
         <artifactId>gwt-jsonix-schema-compiler</artifactId>
-        <version>1.0b</version>
+        <version>1.0c</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.jaxb2_commons</groupId>

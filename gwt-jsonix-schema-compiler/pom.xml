@@ -5,7 +5,7 @@
   <parent>
     <artifactId>gwt-jsonix-marshallers-project</artifactId>
     <groupId>org.kogito</groupId>
-    <version>1.0b</version>
+    <version>1.0c</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
