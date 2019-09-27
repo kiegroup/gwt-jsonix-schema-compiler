@@ -18,9 +18,22 @@ package gwt.jsonix.marshallers.xjc.plugin.builders;
 
 public class ClassNameHelper {
 
-    private static final String PREFIX = "JsInterop__ConstructorAPI__DMN__JSI";
+    private static final String PREFIX = "JsInterop__ConstructorAPI__DMN";
+
+    private static final String SEPARATOR = "__";
+
+    private static final String CLASS_PREFIX = "JSI";
 
     public static String getJsInteropTypeName(final String className) {
-        return PREFIX + className;
+        return join(PREFIX, CLASS_PREFIX + className);
+    }
+
+    public static String getJsInteropTypeName(final String moduleName,
+                                              final String className) {
+        return join(PREFIX, moduleName, CLASS_PREFIX + className);
+    }
+
+    private static String join(final String... nameParts) {
+        return String.join(SEPARATOR, nameParts);
     }
 }

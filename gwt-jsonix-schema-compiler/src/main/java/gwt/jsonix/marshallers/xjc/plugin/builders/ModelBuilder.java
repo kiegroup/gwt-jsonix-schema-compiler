@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.namespace.QName;
 
@@ -120,32 +122,45 @@ public class ModelBuilder {
             jDefinedBaseClass = getFromBasecClassInfo(definedClassesMap, toPopulate, packageModuleMap, model, basecClassInfo, jsUtilsClass, jsiNameClass);
         }
         boolean hasClassParent = (parent != null && !(parent instanceof CClassInfoParent.Package));
-        String parentNamespace = null;
+
+        final String jsTypeName;
+        final String parentClassName;
+        final String moduleName;
+
         if (hasClassParent && definedClassesMap.containsKey(parent.fullName())) { // This is for inner classes
-            String parentFullName = parent.fullName();
+            final String parentFullName = parent.fullName();
+            final String parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf('.') + 1) : parentFullName;
+
             jDefinedClass = getFromParent(parent, jDefinedBaseClass, definedClassesMap, nameSpace);
-            parentNamespace = parentFullName.contains(".") ? parentFullName.substring(parentFullName.lastIndexOf('.') + 1) : parentFullName;
-            nameSpaceExpression = JExpr.lit(parentNamespace);
-            nameSpace = parentNamespace + "." + nameSpace;
+            moduleName = packageModuleMap.get(jDefinedClass._package().name());
+            nameSpaceExpression = JExpr.lit(getJsInteropTypeName(moduleName, parentNamespace));
+            jsTypeName = shortClassName;
+            parentClassName = ((CClassInfo) cClassInfo.parent()).shortName;
         } else {
-            String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + nameSpace;
+            final String fullClassName = cClassInfo.getOwnerPackage().name() + ".JSI" + nameSpace;
+
             jDefinedClass = jDefinedBaseClass != null ? toPopulate._class(fullClassName)._extends(jDefinedBaseClass) : toPopulate._class(fullClassName);
+            moduleName = packageModuleMap.get(jDefinedClass._package().name());
             nameSpaceExpression = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
+            jsTypeName = getJsInteropTypeName(moduleName, shortClassName);
+            parentClassName = null;
         }
+
         definedClassesMap.put(cClassInfo.fullName(), jDefinedClass);
         JDocComment comment = jDefinedClass.javadoc();
         String commentString = "JSInterop adapter for <code>" + nameSpace + "</code>";
         comment.append(commentString);
-        String jsTypeName = getJsInteropTypeName(shortClassName);
 
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
                 .param("namespace", nameSpaceExpression)
                 .param("name", jsTypeName)
                 .param("isNative", true);
 
-        String moduleName = packageModuleMap.get(jDefinedClass._package().name());
-        addInstanceOf(jDefinedClass, jsUtilsClass, moduleName, nameSpace);
-        addTypeName(jDefinedClass, toPopulate, moduleName, nameSpace);
+        String typeNameConstant = Stream.of(moduleName, parentClassName, nameSpace).filter(Objects::nonNull).collect(Collectors.joining("."));
+
+        final JFieldVar typeNameField = addTypeName(jDefinedClass, toPopulate, typeNameConstant);
+        addInstanceOf(jDefinedClass, jsUtilsClass, typeNameField);
+
         if (cClassInfo.getTypeName() != null) {
             addGetJSINameMethod(toPopulate, jDefinedClass, cClassInfo.getTypeName(), jsiNameClass);
         }
@@ -216,10 +231,8 @@ public class ModelBuilder {
 
     protected static void addInstanceOf(final JDefinedClass jDefinedClass,
                                         final JDefinedClass jsUtilsClass,
-                                        final String moduleName,
-                                        final String originalName) {
+                                        final JFieldVar typeNameField) {
 
-        final String fullTypeName = moduleName + "." + originalName;
         final int mods = JMod.PUBLIC + JMod.STATIC;
         final String methodName = "instanceOf";
 
@@ -230,18 +243,21 @@ public class ModelBuilder {
 
         instanceOfMethod.annotate(JsOverlay.class);
 
-        block._return(JExpr.lit(fullTypeName).invoke("equals").arg(getTypeName));
+        block._return(typeNameField.invoke("equals").arg(getTypeName));
     }
 
-    protected static void addTypeName(JDefinedClass jDefinedClass, JCodeModel jCodeModel, String moduleName, String originalName) {
+    protected static JFieldVar addTypeName(final JDefinedClass jDefinedClass,
+                                           final JCodeModel jCodeModel,
+                                           final String fullName) {
 
         final JClass propertyRef = jCodeModel.ref(String.class);
-        final String fullName = moduleName + "." + originalName;
         final int mods = JMod.PUBLIC + JMod.STATIC + JMod.FINAL;
         final JFieldVar typeNameField = jDefinedClass.field(mods, propertyRef, "TYPE");
 
         typeNameField.annotate(JsOverlay.class);
         typeNameField.init(JExpr.lit(fullName));
+
+        return typeNameField;
     }
 
     protected static void addGetJSINameMethod(JCodeModel jCodeModel, JDefinedClass jDefinedClass, QName typeName, JDefinedClass jsiNameClass) {
