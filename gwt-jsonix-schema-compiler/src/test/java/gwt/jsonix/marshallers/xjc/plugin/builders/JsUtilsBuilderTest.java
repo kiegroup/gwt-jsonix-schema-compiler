@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JDefinedClass;
@@ -14,6 +15,7 @@ import gwt.jsonix.marshallers.xjc.plugin.AbstractBuilderTest;
 import jsinterop.base.JsArrayLike;
 import org.junit.Test;
 
+import static gwt.jsonix.marshallers.xjc.plugin.builders.JsUtilsBuilder.FROM_ATTRIBUTES_MAP_METHOD_BODY;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.JsUtilsBuilder.GENERIC_EXTEND_TYPE_NAME;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.JsUtilsBuilder.GENERIC_TYPE_NAME;
 import static gwt.jsonix.marshallers.xjc.plugin.builders.JsUtilsBuilder.PUBLIC_STATIC_MODS;
@@ -28,6 +30,21 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
         final JDefinedClass retrieved = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, "fake.testing");
         assertNotNull(retrieved);
         printJDefinedClass(retrieved);
+    }
+
+    @Test
+    public void addJavaFromAttributesMapMethod() {
+        final JMethod retrieved = JsUtilsBuilder.addJavaFromAttributesMapMethod(jCodeModel, jDefinedClass);
+        assertNotNull(retrieved);
+        assertEquals(PUBLIC_STATIC_MODS, retrieved.mods().getValue());
+        assertEquals("fromAttributesMap", retrieved.name());
+        commonVerifyQNameStringNarrowedMapClass((JClass) retrieved.params().get(0).type());
+        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
+        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].binaryName());
+        final JBlock retrievedBody = retrieved.body();
+        assertEquals("toReturn", ((JVar) retrievedBody.getContents().get(0)).name());
+        assertEquals(GENERIC_TYPE_NAME, ((JVar) retrievedBody.getContents().get(0)).type().binaryName());
+        // TODO {gcardosi} to complete
     }
 
     @Test
@@ -117,6 +134,10 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
     @Test
     public void getQNameStringNarrowedMapClass() {
         final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapClass(jCodeModel);
+        commonVerifyQNameStringNarrowedMapClass(retrieved);
+    }
+
+    private void commonVerifyQNameStringNarrowedMapClass(final JClass retrieved) {
         assertNotNull(retrieved);
         assertEquals(Map.class.getCanonicalName(), retrieved.erasure().binaryName());
         assertEquals(QName.class.getCanonicalName(), retrieved.getTypeParameters().get(0).binaryName());

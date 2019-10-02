@@ -146,7 +146,7 @@ public class JsUtilsBuilder {
             "        }\n" +
             "    }-*/;\n";
 
-    private static final String FROM_ATTRIBUTES_MAP_METHOD_BODY = "original.entrySet().stream().forEach(e -> {\n" +
+    protected static final String FROM_ATTRIBUTES_MAP_METHOD_BODY = "original.entrySet().stream().forEach(e -> {\n" +
             "            putToJavaScriptObject(toReturn, e.getKey().toString(), e.getValue());\n" +
             "        });";
 
