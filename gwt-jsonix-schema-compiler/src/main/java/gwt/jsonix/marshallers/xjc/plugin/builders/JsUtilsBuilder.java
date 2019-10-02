@@ -47,12 +47,12 @@ import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
 
 public class JsUtilsBuilder {
 
-    private static final String GENERIC_TYPE_NAME = "D";
-    private static final String GENERIC_EXTEND_TYPE_NAME = "E";
-    private static final String ELEMENT = "element";
-    private static final int PUBLIC_STATIC_MODS = JMod.PUBLIC + JMod.STATIC;
-    private static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
-    private static final int PRIVATE_STATIC_MODS = JMod.PRIVATE + JMod.STATIC;
+    protected static final String GENERIC_TYPE_NAME = "D";
+    protected static final String GENERIC_EXTEND_TYPE_NAME = "E";
+    protected static final String ELEMENT = "element";
+    protected static final int PUBLIC_STATIC_MODS = JMod.PUBLIC + JMod.STATIC;
+    protected static final int PUBLIC_STATIC_NATIVE_MODS = PUBLIC_STATIC_MODS + JMod.NATIVE;
+    protected static final int PRIVATE_STATIC_MODS = JMod.PRIVATE + JMod.STATIC;
 
     private static final String NEW_WRAPPED_INSTANCE_TEMPLATE = "\r\n     /**\n" +
             "     * Returns a <b>stub</b> object with <b>name</b> and <b>value</b> attributes\n" +
@@ -479,64 +479,66 @@ public class JsUtilsBuilder {
         return toReturn;
     }
 
-    private static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
+    protected static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
         JMethod toReturn = getJMethod(jsUtils, returnType, methodName);
         toReturn.generify(GENERIC_TYPE_NAME);
         return toReturn;
     }
 
-    private static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
+    protected static JMethod getGenerifiedJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
         JMethod toReturn = getJMethod(jsUtils, returnType, methodName);
         toReturn.generify(GENERIC_TYPE_NAME);
         return toReturn;
     }
 
-    private static JMethod getGenerifiedNativeJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
-        JMethod toReturn = getNativeJMethod(jsUtils, returnType, methodName);
-        toReturn.generify(GENERIC_TYPE_NAME);
-        return toReturn;
-    }
+    // TODO {gcardosi} delete when we are sure it is unneeded
+//    protected static JMethod getGenerifiedNativeJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
+//        JMethod toReturn = getNativeJMethod(jsUtils, returnType, methodName);
+//        toReturn.generify(GENERIC_TYPE_NAME);
+//        return toReturn;
+//    }
 
-    private static JMethod getGenerifiedNativeJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
-        JMethod toReturn = getNativeJMethod(jsUtils, returnType, methodName);
-        toReturn.generify(GENERIC_TYPE_NAME);
-        return toReturn;
-    }
+    // TODO {gcardosi} delete when we are sure it is unneeded
+//    protected static JMethod getGenerifiedNativeJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
+//        JMethod toReturn = getNativeJMethod(jsUtils, returnType, methodName);
+//        toReturn.generify(GENERIC_TYPE_NAME);
+//        return toReturn;
+//    }
 
-    private static JMethod getJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
+    protected static JMethod getJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
         return jsUtils.method(PUBLIC_STATIC_MODS, returnType, methodName);
     }
 
-    private static JMethod getJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
+    protected static JMethod getJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
         return jsUtils.method(PUBLIC_STATIC_MODS, returnType, methodName);
     }
 
-    private static JMethod getNativeJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
+    protected static JMethod getNativeJMethod(JDefinedClass jsUtils, Class<?> returnType, String methodName) {
         return jsUtils.method(PUBLIC_STATIC_NATIVE_MODS, returnType, methodName);
     }
 
-    private static JMethod getNativeJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
+    protected static JMethod getNativeJMethod(JDefinedClass jsUtils, JClass returnType, String methodName) {
         return jsUtils.method(PUBLIC_STATIC_NATIVE_MODS, returnType, methodName);
     }
 
-    private static JVar getJSArrayNarrowedJVar(JCodeModel jCodeModel, JMethod jmethod) {
+    protected static JVar getJSArrayNarrowedJVar(JCodeModel jCodeModel, JMethod jmethod) {
         return jmethod.param(JMod.FINAL, getJsArrayNarrowedClass(jCodeModel), "jsArrayLike");
     }
 
-    private static JClass getGenericT(JCodeModel jCodeModel) {
+    protected static JClass getGenericT(JCodeModel jCodeModel) {
         return jCodeModel.ref(GENERIC_TYPE_NAME);
     }
 
-    private static JClass getGenericTExtends(JCodeModel jCodeModel) {
+    protected static JClass getGenericTExtends(JCodeModel jCodeModel) {
         return jCodeModel.ref(GENERIC_EXTEND_TYPE_NAME);
     }
 
-    private static JClass getJsArrayNarrowedClass(JCodeModel jCodeModel) {
+    protected static JClass getJsArrayNarrowedClass(JCodeModel jCodeModel) {
         JClass jsArrayLikeClass = jCodeModel.ref(JsArrayLike.class);
         return jsArrayLikeClass.narrow(getGenericT(jCodeModel));
     }
 
-    private static JClass getQNameStringNarrowedMapClass(JCodeModel jCodeModel) {
+    protected static JClass getQNameStringNarrowedMapClass(JCodeModel jCodeModel) {
         JClass rawMapClass = jCodeModel.ref(Map.class);
         final JClass qName = jCodeModel.ref(QName.class);
         return rawMapClass.narrow(qName, jCodeModel.ref(String.class));
