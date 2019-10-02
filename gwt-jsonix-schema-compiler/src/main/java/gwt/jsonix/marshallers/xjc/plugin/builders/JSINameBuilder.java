@@ -25,10 +25,10 @@ import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeGetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeSetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.ClassNameHelper.getJsInteropTypeName;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeGetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.ClassNameUtils.getJsInteropTypeName;
 
 /**
  * Build the <b>JSIName</b> class representing the <b>name</b> attribute of a <b>wrapped</b> object
@@ -70,7 +70,7 @@ public class JSINameBuilder {
 
         final JExpression nameSpaceExpression = jCodeModel.ref(JsPackage.class).staticRef("GLOBAL");
         final JDefinedClass toReturn = jCodeModel._class(jsMainPackage + "JSI" + className);
-        final String jsTypeName = getJsInteropTypeName(className);
+        final String jsTypeName =  getJsInteropTypeName(toReturn.fullName());
 
         toReturn.annotate(jCodeModel.ref(JsType.class))
                 .param("namespace", nameSpaceExpression)

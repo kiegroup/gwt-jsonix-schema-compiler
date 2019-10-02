@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package gwt.jsonix.marshallers.xjc.plugin.builders;
+package gwt.jsonix.marshallers.xjc.plugin.utils;
 
-public class ClassNameHelper {
+public class ClassNameUtils {
 
-    private static final String PREFIX = "JsInterop__ConstructorAPI__DMN";
+    private static final String PREFIX = "JsInterop__ConstructorAPI";
 
     private static final String SEPARATOR = "__";
 
     private static final String CLASS_PREFIX = "JSI";
 
     public static String getJsInteropTypeName(final String className) {
-        return join(PREFIX, CLASS_PREFIX + className);
+        return join(PREFIX, className.replace(".", SEPARATOR));
     }
 
     public static String getJsInteropTypeName(final String moduleName,
                                               final String className) {
-        return join(PREFIX, moduleName, CLASS_PREFIX + className);
+        return join(PREFIX, moduleName, /*CLASS_PREFIX + */className.replace(".", SEPARATOR));
     }
 
     private static String join(final String... nameParts) {

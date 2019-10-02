@@ -29,9 +29,9 @@ import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeGetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addNativeSetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeGetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
 
 /**
  * Actual builder for the <b>JSInterop</b> <code>container</code> class that will be used by <b>marshaller</b> callback

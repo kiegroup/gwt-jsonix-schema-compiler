@@ -15,6 +15,7 @@
  */
 package gwt.jsonix.marshallers.xjc.plugin;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import gwt.jsonix.marshallers.xjc.plugin.builders.JSINameBuilder;
 import gwt.jsonix.marshallers.xjc.plugin.builders.JsUtilsBuilder;
 import gwt.jsonix.marshallers.xjc.plugin.builders.MainJsBuilder;
 import gwt.jsonix.marshallers.xjc.plugin.builders.ModelBuilder;
+import gwt.jsonix.marshallers.xjc.plugin.dtos.ConstructorMapper;
 import org.hisrc.jsonix.args4j.PartialCmdLineParser;
 import org.hisrc.jsonix.configuration.JsonSchemaConfiguration;
 import org.hisrc.jsonix.configuration.MappingConfiguration;
@@ -52,9 +54,10 @@ import org.kohsuke.args4j.CmdLineException;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.createCodeWriter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.writeJSInteropCode;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.createCodeWriter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.writeJSInteropCode;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.ClassNameUtils.getJsInteropTypeName;
 
 /**
  * Wrapper class of the original <code>JsonixPlugin</code> that also generates <b>JSInterop</b> code
@@ -106,11 +109,12 @@ public class JsonixGWTPlugin extends JsonixPlugin {
             final JDefinedClass jsUtilsClass = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, settings.getJsMainPackage());
             final Map<String, String> packageModuleMap = getPackageModuleMap(model);
             final Map<String, JClass> definedClassesMap = new HashMap<>();
-            ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap, jsUtilsClass, jsiNameClass);
+            final Map<String, List<ConstructorMapper>> constructorsMap = getConstructorsMap(jsiNameClass);
+            ModelBuilder.generateJSInteropModels(definedClassesMap, model, jCodeModel, packageModuleMap, jsUtilsClass, jsiNameClass, constructorsMap);
             final Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
             final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, topLevelElementsMap, jCodeModel);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);
-            MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, jCodeModel);
+            MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, constructorsMap, jCodeModel);
             writeJSInteropCode(jCodeModel, codeWriter);
         } catch (Exception e) {
             log(LogLevelSetting.ERROR, e.getMessage(), e);
@@ -122,6 +126,13 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     @Override
     public void postProcessModel(final Model model, final ErrorHandler errorHandler) {
         //
+    }
+
+    protected Map<String, List<ConstructorMapper>> getConstructorsMap(JDefinedClass jsiNameClass ) {
+        final Map<String, List<ConstructorMapper>> toReturn = new HashMap<>();
+//        JsInterop__ConstructorAPI__org__kie__workbench__common__dmn__webapp__kogito__marshaller__mapper__JSIName
+        toReturn.put("GWT_JSONIX", Collections.singletonList(new ConstructorMapper("JSINAME", getJsInteropTypeName(jsiNameClass.fullName()), null)));
+        return toReturn;
     }
 
     protected Map<String, Map<String, JClass>> getTopLevelElementsMap(final Set<String> packageNames,

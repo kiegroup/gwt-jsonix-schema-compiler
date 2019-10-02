@@ -43,7 +43,7 @@ import jsinterop.base.Js;
 import jsinterop.base.JsArrayLike;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
 
 public class JsUtilsBuilder {
 
