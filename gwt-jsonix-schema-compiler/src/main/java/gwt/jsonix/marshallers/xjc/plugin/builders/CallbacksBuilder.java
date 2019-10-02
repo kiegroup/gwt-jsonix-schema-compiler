@@ -31,10 +31,10 @@ import jsinterop.annotations.JsFunction;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.CALLBACKS;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.MARSHALL_CALLBACK;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.UNMARSHALL_CALLBACK;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.CALLBACKS;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.MARSHALL_CALLBACK;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.UNMARSHALL_CALLBACK;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
 
 /**
  * Actual builder for the <b>JSInterop</b> <b>callbacks</b> classes

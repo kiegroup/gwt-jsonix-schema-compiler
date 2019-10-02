@@ -25,9 +25,10 @@ import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addGetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addSetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeGetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.ClassNameUtils.getJsInteropTypeName;
 
 /**
  * Build the <b>JSIName</b> class representing the <b>name</b> attribute of a <b>wrapped</b> object
@@ -35,12 +36,6 @@ import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
 public class JSINameBuilder {
 
     private static final String[] FIELDS = {"namespaceURI", "localPart", "prefix", "key", "string"};
-
-    protected static final String NEW_INSTANCE_TEMPLATE = "\r\n    public static native JSIName newInstance() /*-{\n"+
-            "        var json = \"{}\";\n"+
-            "        var retrieved = JSON.parse(json)\n"+
-            "        return retrieved\n"+
-            "    }-*/;";
 
     private JSINameBuilder() {
     }
@@ -55,29 +50,33 @@ public class JSINameBuilder {
         for (String field : FIELDS) {
             addField(jCodeModel, jDefinedClass, field);
         }
-        addNewInstance(jDefinedClass);
-    }
-
-    protected static void addNewInstance(JDefinedClass jDefinedClass) {
-        jDefinedClass.direct(NEW_INSTANCE_TEMPLATE);
     }
 
     protected static void addField(JCodeModel jCodeModel, JDefinedClass jDefinedClass, String field) {
-        addGetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
-        addSetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
+        addNativeGetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
+        addNativeSetter(jCodeModel, jDefinedClass, jCodeModel.ref(String.class), StringUtils.capitalize(field), field);
     }
 
     protected static JDefinedClass getJSINameClass(JCodeModel jCodeModel, String jsMainPackage) throws
             JClassAlreadyExistsException {
+
         log(LogLevelSetting.DEBUG, "Creating JSIName class");
+
+        final String className = "Name";
+
         if (!jsMainPackage.isEmpty() && !jsMainPackage.endsWith(".")) {
             jsMainPackage += ".";
         }
-        JExpression nameSpaceExpression = jCodeModel.ref(JsPackage.class).staticRef("GLOBAL");
-        final JDefinedClass toReturn = jCodeModel._class(jsMainPackage + "JSIName");
+
+        final JExpression nameSpaceExpression = jCodeModel.ref(JsPackage.class).staticRef("GLOBAL");
+        final JDefinedClass toReturn = jCodeModel._class(jsMainPackage + "JSI" + className);
+        final String jsTypeName =  getJsInteropTypeName(toReturn.fullName());
+
         toReturn.annotate(jCodeModel.ref(JsType.class))
                 .param("namespace", nameSpaceExpression)
-                .param("name", "JSIName");
+                .param("name", jsTypeName)
+                .param("isNative", true);
+
         JDocComment comment = toReturn.javadoc();
         comment.append("Class representing the <b>name</b> attribute of a <b>wrapped</b> object");
         return toReturn;
