@@ -29,9 +29,9 @@ import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 import org.hisrc.jsonix.settings.LogLevelSetting;
 
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addGetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.addSetter;
-import static gwt.jsonix.marshallers.xjc.plugin.builders.BuilderUtils.log;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeGetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.addNativeSetter;
+import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.log;
 
 /**
  * Actual builder for the <b>JSInterop</b> <code>container</code> class that will be used by <b>marshaller</b> callback
@@ -87,13 +87,13 @@ public class ContainerObjectBuilder {
     protected static void addNameProperty(JCodeModel jCodeModel, JDefinedClass toPopulate) {
         log(LogLevelSetting.DEBUG, String.format("Add getName property to object %1$s.%2$s ...", toPopulate._package().name(), toPopulate.name()));
         JClass parameterRef = jCodeModel.ref(String.class);
-        addGetter(jCodeModel, toPopulate, parameterRef, "name", "name");
+        addNativeGetter(jCodeModel, toPopulate, parameterRef, "Name", "name");
     }
 
     protected static void addElementProperty(JCodeModel jCodeModel, JDefinedClass toPopulate, String elementName, JClass elementClass) {
         log(LogLevelSetting.DEBUG, String.format("Add %1$s accessors to object %2$s.%3$s ...", elementName, toPopulate._package().name(), toPopulate.name()));
         String publicName = StringUtils.capitalize(elementName);
-        addGetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
-        addSetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
+        addNativeGetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
+        addNativeSetter(jCodeModel, toPopulate, elementClass, publicName, elementName);
     }
 }
