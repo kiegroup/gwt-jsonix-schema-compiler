@@ -123,7 +123,7 @@ public class MainJsBuilder {
 
         final JVar toReturnVar = body.decl(JMod.FINAL, jsonObjectRef, "toReturn", JExpr._new(jsonObjectRef));
         body.add(toReturnVar.invoke("put").arg("name").arg(JExpr._new(jsonStringRef).arg(nameParam)));
-        body.add(toReturnVar.invoke("put").arg("typeName").arg(JExpr._new(jsonStringRef).arg(typeNameParam)));
+        body._if(typeNameParam.ne(JExpr._null()))._then().add(toReturnVar.invoke("put").arg("typeName").arg(JExpr._new(jsonStringRef).arg(typeNameParam)));
         body._if(nameSpaceParam.ne(JExpr._null()))._then().add(toReturnVar.invoke("put").arg("nameSpace").arg(JExpr._new(jsonStringRef).arg(nameSpaceParam)));
         body._return(toReturnVar);
         return toReturn;
