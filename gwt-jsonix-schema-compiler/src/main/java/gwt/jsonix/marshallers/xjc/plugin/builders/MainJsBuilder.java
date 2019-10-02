@@ -100,8 +100,9 @@ public class MainJsBuilder {
         constructorsMap.values().forEach(constructorMappers -> size.addAndGet(constructorMappers.size()));
         final JArray jArray = JExpr.newArray(jsonObjectRef);
         constructorsMap.forEach((baseType, constructorMappers) -> constructorMappers.forEach(constructorMapper -> {
+            JExpression originalTypeNameExpression = constructorMapper.getOriginalTypeName() == null ? JExpr._null() : JExpr.lit(constructorMapper.getOriginalTypeName());
             JExpression nameSpaceExpression = constructorMapper.getNameSpace() == null ? JExpr._null() : JExpr.lit(constructorMapper.getNameSpace());
-            jArray.add(JExpr.invoke(getJSONObjectMethod).arg(JExpr.lit(constructorMapper.getJsiTypeName())).arg(JExpr.lit(constructorMapper.getOriginalTypeName())).arg(nameSpaceExpression));
+            jArray.add(JExpr.invoke(getJSONObjectMethod).arg(JExpr.lit(constructorMapper.getJsiTypeName())).arg(originalTypeNameExpression).arg(nameSpaceExpression));
         }));
         final JVar jsonObjectArrayVar = body.decl(JMod.FINAL, jsonObjectRef.array(), "toSet", jArray);
         body.add(toReturnVar.invoke("set").arg("constructors").arg(jsonObjectArrayVar));

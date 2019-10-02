@@ -131,7 +131,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
     protected Map<String, List<ConstructorMapper>> getConstructorsMap(JDefinedClass jsiNameClass ) {
         final Map<String, List<ConstructorMapper>> toReturn = new HashMap<>();
 //        JsInterop__ConstructorAPI__org__kie__workbench__common__dmn__webapp__kogito__marshaller__mapper__JSIName
-        toReturn.put("GWT_JSONIX", Collections.singletonList(new ConstructorMapper("JSINAME", getJsInteropTypeName(jsiNameClass.fullName()), null)));
+        toReturn.put("GWT_JSONIX", Collections.singletonList(new ConstructorMapper(null, getJsInteropTypeName(jsiNameClass.fullName()), null)));
         return toReturn;
     }
 
