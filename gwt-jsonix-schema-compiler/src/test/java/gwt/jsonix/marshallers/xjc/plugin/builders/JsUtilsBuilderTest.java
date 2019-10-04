@@ -67,26 +67,6 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
     }
 
     @Test
-    public void addJavaFromAttributesMapMethod() throws IOException, JClassAlreadyExistsException {
-        final JMethod retrieved = JsUtilsBuilder.addJavaFromAttributesMapMethod(methodTestJCodeModel, jDefinedClass);
-        Object instance = commonGetInstance();
-        System.out.println(instance);
-//        assertNotNull(retrieved);
-//        assertEquals(PUBLIC_STATIC_MODS, retrieved.mods().getValue());
-//        assertEquals("fromAttributesMap", retrieved.name());
-//        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
-//        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].name());
-//        assertEquals(1, retrieved.params().size());
-//        assertEquals("original", retrieved.params().get(0).name());
-//        commonVerifyQNameStringNarrowedMapClass((JClass) retrieved.params().get(0).type());
-//        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
-//        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].binaryName());
-//        final JBlock retrievedBody = retrieved.body();
-//        assertEquals("toReturn", ((JVar) retrievedBody.getContents().get(0)).name());
-//        assertEquals(GENERIC_TYPE_NAME, ((JVar) retrievedBody.getContents().get(0)).type().binaryName());
-    }
-
-    @Test
     public void getGenerifiedJMethodByClass() {
         final JMethod retrieved = JsUtilsBuilder.getGenerifiedJMethod(jDefinedClass, String.class, "testingMethod");
         assertNotNull(retrieved);
