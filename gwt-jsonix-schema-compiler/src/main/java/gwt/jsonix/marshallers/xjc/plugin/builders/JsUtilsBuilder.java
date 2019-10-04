@@ -70,7 +70,7 @@ public class JsUtilsBuilder {
             "     * @param wrappedObject\n" +
             "     * @param name\n" +
             "     */\n" +
-            "    public static native <D> void setNameOnWrapped(D wrappedObject, org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JSIName name) /*-{\n" +
+            "    public static native <D> void setNameOnWrapped(D wrappedObject, JSIName name) /*-{\n" +
             "        wrappedObject.name = name\n" +
             "    }-*/;";
 

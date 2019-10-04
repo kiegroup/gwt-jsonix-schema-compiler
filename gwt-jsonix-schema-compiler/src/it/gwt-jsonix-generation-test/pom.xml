@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.kogito</groupId>
-  <artifactId>gwt-jsonix-test</artifactId>
+  <artifactId>gwt-jsonix-generation-test</artifactId>
   <version>1.0</version>
   <packaging>jar</packaging>
 

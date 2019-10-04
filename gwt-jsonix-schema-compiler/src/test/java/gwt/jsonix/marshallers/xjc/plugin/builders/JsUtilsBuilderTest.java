@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
-import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JDefinedClass;
@@ -30,14 +29,14 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void generateJsUtilsClass() throws JClassAlreadyExistsException, IOException {
-        final JDefinedClass retrieved = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, "fake.testing");
+        final JDefinedClass retrieved = JsUtilsBuilder.generateJsUtilsClass(methodTestJCodeModel, "fake.testing");
         assertNotNull(retrieved);
         printJDefinedClass(retrieved);
     }
 
     @Test
     public void addJavaToAttributesMapMethod() {
-        final JMethod retrieved = JsUtilsBuilder.addJavaToAttributesMapMethod(jCodeModel, jDefinedClass);
+        final JMethod retrieved = JsUtilsBuilder.addJavaToAttributesMapMethod(methodTestJCodeModel, jDefinedClass);
         assertNotNull(retrieved);
         assertEquals(PUBLIC_STATIC_MODS, retrieved.mods().getValue());
         assertEquals("toAttributesMap", retrieved.name());
@@ -51,7 +50,7 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void addPutToAttributesMap() {
-        final JMethod retrieved = JsUtilsBuilder.addPutToAttributesMap(jCodeModel, jDefinedClass);
+        final JMethod retrieved = JsUtilsBuilder.addPutToAttributesMap(methodTestJCodeModel, jDefinedClass);
         assertNotNull(retrieved);
         assertEquals(PRIVATE_STATIC_MODS, retrieved.mods().getValue());
         assertEquals("putToAttributesMap", retrieved.name());
@@ -68,21 +67,23 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
     }
 
     @Test
-    public void addJavaFromAttributesMapMethod() {
-        final JMethod retrieved = JsUtilsBuilder.addJavaFromAttributesMapMethod(jCodeModel, jDefinedClass);
-        assertNotNull(retrieved);
-        assertEquals(PUBLIC_STATIC_MODS, retrieved.mods().getValue());
-        assertEquals("fromAttributesMap", retrieved.name());
-        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
-        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].name());
-        assertEquals(1, retrieved.params().size());
-        assertEquals("original", retrieved.params().get(0).name());
-        commonVerifyQNameStringNarrowedMapClass((JClass) retrieved.params().get(0).type());
-        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
-        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].binaryName());
-        final JBlock retrievedBody = retrieved.body();
-        assertEquals("toReturn", ((JVar) retrievedBody.getContents().get(0)).name());
-        assertEquals(GENERIC_TYPE_NAME, ((JVar) retrievedBody.getContents().get(0)).type().binaryName());
+    public void addJavaFromAttributesMapMethod() throws IOException, JClassAlreadyExistsException {
+        final JMethod retrieved = JsUtilsBuilder.addJavaFromAttributesMapMethod(methodTestJCodeModel, jDefinedClass);
+        Object instance = commonGetInstance();
+        System.out.println(instance);
+//        assertNotNull(retrieved);
+//        assertEquals(PUBLIC_STATIC_MODS, retrieved.mods().getValue());
+//        assertEquals("fromAttributesMap", retrieved.name());
+//        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
+//        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].name());
+//        assertEquals(1, retrieved.params().size());
+//        assertEquals("original", retrieved.params().get(0).name());
+//        commonVerifyQNameStringNarrowedMapClass((JClass) retrieved.params().get(0).type());
+//        assertEquals(GENERIC_TYPE_NAME, retrieved.type().binaryName());
+//        assertEquals(GENERIC_TYPE_NAME, retrieved.typeParams()[0].binaryName());
+//        final JBlock retrievedBody = retrieved.body();
+//        assertEquals("toReturn", ((JVar) retrievedBody.getContents().get(0)).name());
+//        assertEquals(GENERIC_TYPE_NAME, ((JVar) retrievedBody.getContents().get(0)).type().binaryName());
     }
 
     @Test
@@ -143,7 +144,7 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void getJSArrayNarrowedJVar() {
-        final JVar retrieved = JsUtilsBuilder.getJSArrayNarrowedJVar(jCodeModel, setJMethod);
+        final JVar retrieved = JsUtilsBuilder.getJSArrayNarrowedJVar(methodTestJCodeModel, setJMethod);
         assertNotNull(retrieved);
         assertEquals(retrieved, setJMethod.params().get(0));
         commonVerifyJsArrayNarrowedClass((JClass) retrieved.type());
@@ -151,43 +152,48 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void getGenericT() {
-        final JClass retrieved = JsUtilsBuilder.getGenericT(jCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getGenericT(methodTestJCodeModel);
         assertNotNull(retrieved);
         assertEquals(GENERIC_TYPE_NAME, retrieved.binaryName());
     }
 
     @Test
     public void getGenericTExtends() {
-        final JClass retrieved = JsUtilsBuilder.getGenericTExtends(jCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getGenericTExtends(methodTestJCodeModel);
         assertNotNull(retrieved);
         assertEquals(GENERIC_EXTEND_TYPE_NAME, retrieved.binaryName());
     }
 
     @Test
     public void getJsArrayNarrowedClass() {
-        final JClass retrieved = JsUtilsBuilder.getJsArrayNarrowedClass(jCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getJsArrayNarrowedClass(methodTestJCodeModel);
         commonVerifyJsArrayNarrowedClass(retrieved);
     }
 
     @Test
     public void getQNameStringNarrowedMapClass() {
-        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapClass(jCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapClass(methodTestJCodeModel);
         commonVerifyQNameStringNarrowedMapClass(retrieved);
     }
 
     @Test
     public void getQNameStringNarrowedMapEntryClass() {
-        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryClass(jCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryClass(methodTestJCodeModel);
         commonVerifyQNameStringNarrowedMapEntryClass(retrieved);
     }
 
     @Test
     public void getQNameStringNarrowedMapEntryConsumerClass() {
-        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryConsumerClass(jCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryConsumerClass(methodTestJCodeModel);
         assertNotNull(retrieved);
         assertEquals(Consumer.class.getCanonicalName(), retrieved.erasure().binaryName());
         commonVerifyQNameStringNarrowedMapEntryClass(retrieved.getTypeParameters().get(0));
     }
+
+    private Object commonGetInstance() throws JClassAlreadyExistsException, IOException {
+        return compileAndLoad();
+    }
+
 
     private void commonVerifyQNameStringNarrowedMapClass(final JClass retrieved) {
         assertNotNull(retrieved);
