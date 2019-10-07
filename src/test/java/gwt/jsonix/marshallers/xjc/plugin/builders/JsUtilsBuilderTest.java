@@ -31,7 +31,6 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
     public void generateJsUtilsClass() throws JClassAlreadyExistsException, IOException {
         final JDefinedClass retrieved = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, "fake.testing");
         assertNotNull(retrieved);
-        printJDefinedClass(retrieved);
     }
 
     @Test

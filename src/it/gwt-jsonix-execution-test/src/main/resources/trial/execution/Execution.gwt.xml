@@ -29,6 +29,7 @@
 
   <!-- Specify the paths for translatable code -->
   <source path="mapper"/>
+  <source path="js"/>
   <super-source path="jre"/>
 
 

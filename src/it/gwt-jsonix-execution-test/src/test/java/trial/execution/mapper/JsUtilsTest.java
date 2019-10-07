@@ -24,11 +24,9 @@ import java.util.stream.IntStream;
 
 import javax.xml.namespace.QName;
 
-import com.google.gwt.junit.client.GWTTestCase;
 import jsinterop.base.JsArrayLike;
-import org.junit.Test;
 
-public class JsUtilsTest extends GWTTestCase {
+public class JsUtilsTest extends AbstractGWTTestCase {
 
     private final String[] ARRAY_TO_ADD = {"TO_ADD_1", "TO_ADD_2", "TO_ADD_3"};
 
@@ -143,11 +141,6 @@ public class JsUtilsTest extends GWTTestCase {
         assertEquals("{namespace}prefix:localpart", retrieved.getString());
     }
 
-    @Override
-    public String getModuleName() {
-        return "trial.execution.Execution";
-    }
-
     private JsArrayLike<String> getPopulatedJsArrayLike() {
         JsArrayLike<String> toReturn = JsUtils.getNativeArray();
         assertEquals(0, toReturn.getLength());
@@ -162,7 +155,7 @@ public class JsUtilsTest extends GWTTestCase {
     private Map<QName, String> getObjectToMap() {
         Map<QName, String> toReturn = new HashMap<>();
         IntStream.range(0, 2).forEach(index -> {
-            QName key = new QName("htttp://namespace-" + index, "localPart-" + index, "prefix" + index);
+            QName key = new QName("http://namespace-" + index, "localPart-" + index, "prefix" + index);
             toReturn.put(key, "FIELD-" + index);
         });
         return toReturn;

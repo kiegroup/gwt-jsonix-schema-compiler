@@ -12,6 +12,7 @@
   <artifactId>gwt-jsonix-schema-compiler</artifactId>
   <packaging>jar</packaging>
   <name>Jsonix GWT Schema Compiler</name>
+  <version>1.0d</version>
   <description>Wrapper of original jsonix-schema-compiler that also generate JSInterop classes</description>
 
   <licenses>
