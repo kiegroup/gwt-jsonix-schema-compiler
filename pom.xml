@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-  <!-- POM file generated with GWT webAppCreator -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.kogito</groupId>
-  <artifactId>gwt-jsonix-marshallers-project</artifactId>
-  <packaging>pom</packaging>
-  <version>1.0d</version>
-  <name>org.kogito.gwt-jsonix-marshallers-project</name>
+  <parent>
+    <groupId>org.jboss</groupId>
+    <artifactId>jboss-parent</artifactId>
+    <version>31</version>
+  </parent>
+
+  <artifactId>gwt-jsonix-schema-compiler</artifactId>
+  <packaging>jar</packaging>
+  <name>Jsonix GWT Schema Compiler</name>
+  <description>Wrapper of original jsonix-schema-compiler that also generate JSInterop classes</description>
 
   <contributors>
     <contributor>
@@ -23,46 +27,232 @@
   </contributors>
 
   <properties>
-
     <!-- Setting maven.compiler.source to something different to 1.8
-         needs that you configure the sourceLevel in gwt-maven-plugin since
-         GWT compiler 2.8 requires 1.8 (see gwt-maven-plugin block below) -->
+       needs that you configure the sourceLevel in gwt-maven-plugin since
+       GWT compiler 2.8 requires 1.8 (see gwt-maven-plugin block below) -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-
     <!-- Don't let your Mac use a crazy non-standard encoding -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <gwt.version>2.8.2</gwt.version>
-
+    <version.gwt>2.8.2</version.gwt>
+    <version.jaxb>2.2.11</version.jaxb>
+    <version.jsinterop>1.0.2</version.jsinterop>
+    <version.args4j>2.0.29</version.args4j>
+    <version.jaxb2-basics>0.11.0</version.jaxb2-basics>
+    <version.jgrapht>0.9.0</version.jgrapht>
+    <version.js-codemodel>1.1</version.js-codemodel>
+    <version.gwt-interop-utils>0.3.0</version.gwt-interop-utils>
+    <version.jsonix-schema-compiler>2.3.9</version.jsonix-schema-compiler>
+    <version.glassfish-javax_json>1.0.4</version.glassfish-javax_json>
+    <version.javax_json_api>1.0</version.javax_json_api>
+    <version.slf4j>1.7.7</version.slf4j>
+    <version.junit>4.11</version.junit>
   </properties>
 
-  <modules>
-    <module>gwt-jsonix-schema-compiler</module>
-<!--    <module>gwt-jsonix-marshaller</module>-->
-<!--    <module>gwt-jsonix-marshallers-demo</module>-->
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.jaxb2_commons</groupId>
+      <artifactId>jaxb2-basics-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.jaxb2_commons</groupId>
+      <artifactId>jaxb2-basics-tools</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet.jaxb2_commons</groupId>
+      <artifactId>jaxb2-basics</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-xjc</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.jsinterop</groupId>
+      <artifactId>jsinterop-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hisrc.jsonix</groupId>
+      <artifactId>jsonix-schema-compiler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.jsinterop</groupId>
+      <artifactId>base</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${version.junit}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.jvnet.jaxb2_commons</groupId>
+        <artifactId>jaxb2-basics-runtime</artifactId>
+        <version>${version.jaxb2-basics}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.jaxb2_commons</groupId>
+        <artifactId>jaxb2-basics-tools</artifactId>
+        <version>${version.jaxb2-basics}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.jaxb2_commons</groupId>
+        <artifactId>jaxb2-basics</artifactId>
+        <version>${version.jaxb2-basics}</version>
+      </dependency>
+      <dependency>
+        <groupId>args4j</groupId>
+        <artifactId>args4j</artifactId>
+        <version>${version.args4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht-core</artifactId>
+        <version>${version.jgrapht}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>${version.glassfish-javax_json}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${version.jaxb}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.json</groupId>
+        <artifactId>javax.json-api</artifactId>
+        <version>${version.javax_json_api}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-xjc</artifactId>
+        <scope>provided</scope>
+        <version>${version.jaxb}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.jsinterop</groupId>
+        <artifactId>jsinterop-annotations</artifactId>
+        <version>${version.jsinterop}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.jsinterop</groupId>
+        <artifactId>base</artifactId>
+        <version>1.0.0-RC1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <scope>test</scope>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hisrc.jsonix</groupId>
+        <artifactId>jsonix-schema-compiler</artifactId>
+        <version>${version.jsonix-schema-compiler}</version>
+      </dependency>
       <!-- ensure all GWT deps use the same version (unless overridden) -->
       <dependency>
         <groupId>com.google.gwt</groupId>
         <artifactId>gwt</artifactId>
-        <version>${gwt.version}</version>
+        <version>${version.gwt}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt-user</artifactId>
+        <version>${version.gwt}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <inherited>true</inherited>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <configuration>
+          <projectsDirectory>src/it</projectsDirectory>
+          <!--          <debug>true</debug>-->
+          <!--          <addTestClassPath>true</addTestClassPath>-->
+          <!--          <postBuildHookScript>verify</postBuildHookScript>-->
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <settingsFile>src/it/settings.xml</settingsFile>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <!--          <mojoExecution></mojoExecution>-->
+          <logDirectory>${project.build.directory}/it</logDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>install</goal>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
 
 </project>
