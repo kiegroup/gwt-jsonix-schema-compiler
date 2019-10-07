@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
@@ -69,7 +70,7 @@ public class JsUtilsBuilder {
             "     * @param wrappedObject\n" +
             "     * @param name\n" +
             "     */\n" +
-            "    public static native <D> void setNameOnWrapped(D wrappedObject, org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper.JSIName name) /*-{\n" +
+            "    public static native <D> void setNameOnWrapped(D wrappedObject, JSIName name) /*-{\n" +
             "        wrappedObject.name = name\n" +
             "    }-*/;";
 
@@ -145,10 +146,6 @@ public class JsUtilsBuilder {
             "            @%1$s.JsUtils::putToAttributesMap(Ljava/util/Map;Ljava/lang/String;Ljava/lang/String;)(toReturn, key, value);\n" +
             "        }\n" +
             "    }-*/;\n";
-
-    protected static final String FROM_ATTRIBUTES_MAP_METHOD_BODY = "original.entrySet().stream().forEach(e -> {\n" +
-            "            putToJavaScriptObject(toReturn, e.getKey().toString(), e.getValue());\n" +
-            "        });";
 
     private static final String GET_EMPTY_JS_OBJECT_METHOD = "\r\n    /**\n" +
             "     * Helper method to create a new empty JavaScript object.\n" +
@@ -458,14 +455,25 @@ public class JsUtilsBuilder {
      */
     protected static JMethod addJavaFromAttributesMapMethod(JCodeModel jCodeModel, JDefinedClass jsUtils) {
         log(LogLevelSetting.DEBUG, "Add java 'fromAttributesMapMethod' method...");
-        JClass narrowedMap = getQNameStringNarrowedMapClass(jCodeModel);
+        final JClass narrowedMap = getQNameStringNarrowedMapClass(jCodeModel);
         final JMethod toReturn = getJMethod(jsUtils, jCodeModel.ref(Object.class), "fromAttributesMap");
         final JTypeVar type = toReturn.generify("D");
         toReturn.type(type);
-        toReturn.param(JMod.FINAL, narrowedMap, "original");
+        final JVar originalParam = toReturn.param(JMod.FINAL, narrowedMap, "original");
         final JBlock block = toReturn.body();
         final JVar mapToReturn = block.decl(JMod.FINAL, type, "toReturn", JExpr.invoke("getJsObject"));
-        block.directStatement(FROM_ATTRIBUTES_MAP_METHOD_BODY);
+
+        final JClass narrowedConsumer = getQNameStringNarrowedMapEntryConsumerClass(jCodeModel);
+        JDefinedClass anonymousNarrowedConsumerProducer = jCodeModel.anonymousClass(narrowedConsumer);
+        final JMethod acceptMethod = anonymousNarrowedConsumerProducer.method(JMod.PUBLIC, jCodeModel.VOID, "accept");
+        acceptMethod.annotate(Override.class);
+        final JVar entry = acceptMethod.param(getQNameStringNarrowedMapEntryClass(jCodeModel), "entry");
+        JBlock methodBody = acceptMethod.body();
+        methodBody.invoke("putToJavaScriptObject")
+                .arg(mapToReturn)
+                .arg(entry.invoke("getKey").invoke("toString"))
+                .arg(entry.invoke("getValue"));
+        block.add((originalParam.invoke("entrySet").invoke("stream").invoke("forEach")).arg(JExpr._new(anonymousNarrowedConsumerProducer)));
         block._return(mapToReturn);
         final JDocComment javadoc = toReturn.javadoc();
         String commentString = "Extracts the <b>otherAttributes</b> property from a <i>regular<i> Java Map to a JavaScriptObject.";
@@ -543,4 +551,17 @@ public class JsUtilsBuilder {
         final JClass qName = jCodeModel.ref(QName.class);
         return rawMapClass.narrow(qName, jCodeModel.ref(String.class));
     }
+
+    protected static JClass getQNameStringNarrowedMapEntryClass(JCodeModel jCodeModel) {
+        JClass rawMapClass = jCodeModel.directClass(Map.Entry.class.getCanonicalName());
+        return rawMapClass.narrow(QName.class,  String.class);
+    }
+
+    protected static JClass getQNameStringNarrowedMapEntryConsumerClass(JCodeModel jCodeModel) {
+        final JClass narrowedQnameMapEntryClass = getQNameStringNarrowedMapEntryClass(jCodeModel);
+        final JClass rawConsumer = jCodeModel.ref(Consumer.class);
+        return rawConsumer.narrow(narrowedQnameMapEntryClass);
+    }
+
+
 }
