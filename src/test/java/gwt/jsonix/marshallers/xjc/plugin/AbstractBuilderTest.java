@@ -38,23 +38,25 @@ public abstract class AbstractBuilderTest {
     /**
      * Instance to be used to test specific methods
      */
-    protected JCodeModel methodTestJCodeModel;
-    /**
-     * Instance to use to test compiled class
-     */
-//    protected JCodeModel compilerJCodeModel;
+    protected JCodeModel jCodeModel;
     protected JDefinedClass jDefinedClass;
+    protected JDefinedClass referredJDefinedClass;
     protected JClass stringClass;
+    protected JClass parameterRef;
     protected JMethod getJMethod;
     protected JMethod setJMethod;
     protected static final String TEST_CLASS_NAME = "foo.bar.TestClass";
+    protected static final String REFERRED_CLASS_NAME = "foo.bar.ReferredClass";
+    protected static final String REF_CLASS_NAME = "REF_CLASS";
+
 
     @Before
     public void setup() throws JClassAlreadyExistsException {
-        methodTestJCodeModel = new JCodeModel();
-//        compilerJCodeModel = new JCodeModel();
-        jDefinedClass = methodTestJCodeModel._class(TEST_CLASS_NAME);
-        stringClass = methodTestJCodeModel.ref(String.class);
+        jCodeModel = new JCodeModel();
+        jDefinedClass = jCodeModel._class(TEST_CLASS_NAME);
+        referredJDefinedClass = jCodeModel._class(REFERRED_CLASS_NAME);
+        stringClass = jCodeModel.ref(String.class);
+        parameterRef = jCodeModel.ref("REF_CLASS");
         getJMethod = jDefinedClass.method(JMod.PUBLIC, String.class, "getTestMethod");
         setJMethod = jDefinedClass.method(JMod.PUBLIC, Void.TYPE, "setTestMethod");
     }
@@ -71,7 +73,7 @@ public abstract class AbstractBuilderTest {
     protected String printJCodeModel() throws IOException {
         final Map<String, ByteArrayOutputStream> streams = new HashMap<>();
         CodeWriter codeWriter = getCodeWriter(streams);
-        methodTestJCodeModel.build(codeWriter);
+        jCodeModel.build(codeWriter);
         StringBuilder stringBuilder = new StringBuilder();
         streams.values().forEach(byteArrayOutputStream -> stringBuilder.append(byteArrayOutputStream.toString()));
         String toReturn = stringBuilder.toString();
@@ -85,7 +87,7 @@ public abstract class AbstractBuilderTest {
         String key = packageName.isEmpty() ? className : packageName + "/" + className;
         final Map<String, ByteArrayOutputStream> streams = new HashMap<>();
         CodeWriter codeWriter = getCodeWriter(streams);
-        methodTestJCodeModel.build(codeWriter);
+        jCodeModel.build(codeWriter);
         String toReturn = streams.get(key).toString();
         System.out.println(toReturn);
         return toReturn;

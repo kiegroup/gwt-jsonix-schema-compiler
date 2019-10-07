@@ -29,14 +29,14 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void generateJsUtilsClass() throws JClassAlreadyExistsException, IOException {
-        final JDefinedClass retrieved = JsUtilsBuilder.generateJsUtilsClass(methodTestJCodeModel, "fake.testing");
+        final JDefinedClass retrieved = JsUtilsBuilder.generateJsUtilsClass(jCodeModel, "fake.testing");
         assertNotNull(retrieved);
         printJDefinedClass(retrieved);
     }
 
     @Test
     public void addJavaToAttributesMapMethod() {
-        final JMethod retrieved = JsUtilsBuilder.addJavaToAttributesMapMethod(methodTestJCodeModel, jDefinedClass);
+        final JMethod retrieved = JsUtilsBuilder.addJavaToAttributesMapMethod(jCodeModel, jDefinedClass);
         assertNotNull(retrieved);
         assertEquals(PUBLIC_STATIC_MODS, retrieved.mods().getValue());
         assertEquals("toAttributesMap", retrieved.name());
@@ -50,7 +50,7 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void addPutToAttributesMap() {
-        final JMethod retrieved = JsUtilsBuilder.addPutToAttributesMap(methodTestJCodeModel, jDefinedClass);
+        final JMethod retrieved = JsUtilsBuilder.addPutToAttributesMap(jCodeModel, jDefinedClass);
         assertNotNull(retrieved);
         assertEquals(PRIVATE_STATIC_MODS, retrieved.mods().getValue());
         assertEquals("putToAttributesMap", retrieved.name());
@@ -124,7 +124,7 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void getJSArrayNarrowedJVar() {
-        final JVar retrieved = JsUtilsBuilder.getJSArrayNarrowedJVar(methodTestJCodeModel, setJMethod);
+        final JVar retrieved = JsUtilsBuilder.getJSArrayNarrowedJVar(jCodeModel, setJMethod);
         assertNotNull(retrieved);
         assertEquals(retrieved, setJMethod.params().get(0));
         commonVerifyJsArrayNarrowedClass((JClass) retrieved.type());
@@ -132,39 +132,39 @@ public class JsUtilsBuilderTest extends AbstractBuilderTest {
 
     @Test
     public void getGenericT() {
-        final JClass retrieved = JsUtilsBuilder.getGenericT(methodTestJCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getGenericT(jCodeModel);
         assertNotNull(retrieved);
         assertEquals(GENERIC_TYPE_NAME, retrieved.binaryName());
     }
 
     @Test
     public void getGenericTExtends() {
-        final JClass retrieved = JsUtilsBuilder.getGenericTExtends(methodTestJCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getGenericTExtends(jCodeModel);
         assertNotNull(retrieved);
         assertEquals(GENERIC_EXTEND_TYPE_NAME, retrieved.binaryName());
     }
 
     @Test
     public void getJsArrayNarrowedClass() {
-        final JClass retrieved = JsUtilsBuilder.getJsArrayNarrowedClass(methodTestJCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getJsArrayNarrowedClass(jCodeModel);
         commonVerifyJsArrayNarrowedClass(retrieved);
     }
 
     @Test
     public void getQNameStringNarrowedMapClass() {
-        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapClass(methodTestJCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapClass(jCodeModel);
         commonVerifyQNameStringNarrowedMapClass(retrieved);
     }
 
     @Test
     public void getQNameStringNarrowedMapEntryClass() {
-        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryClass(methodTestJCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryClass(jCodeModel);
         commonVerifyQNameStringNarrowedMapEntryClass(retrieved);
     }
 
     @Test
     public void getQNameStringNarrowedMapEntryConsumerClass() {
-        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryConsumerClass(methodTestJCodeModel);
+        final JClass retrieved = JsUtilsBuilder.getQNameStringNarrowedMapEntryConsumerClass(jCodeModel);
         assertNotNull(retrieved);
         assertEquals(Consumer.class.getCanonicalName(), retrieved.erasure().binaryName());
         commonVerifyQNameStringNarrowedMapEntryClass(retrieved.getTypeParameters().get(0));
