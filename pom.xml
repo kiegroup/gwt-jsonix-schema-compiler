@@ -9,6 +9,7 @@
     <version>31</version>
   </parent>
 
+  <groupId>org.kogito</groupId>
   <artifactId>gwt-jsonix-schema-compiler</artifactId>
   <packaging>jar</packaging>
   <name>Jsonix GWT Schema Compiler</name>
