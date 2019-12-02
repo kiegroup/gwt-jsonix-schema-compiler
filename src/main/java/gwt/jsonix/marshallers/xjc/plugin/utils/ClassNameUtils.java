@@ -22,8 +22,6 @@ public class ClassNameUtils {
 
     private static final String SEPARATOR = "__";
 
-    private static final String CLASS_PREFIX = "JSI";
-
     public static String getJsInteropTypeName(final String className) {
         return join(PREFIX, className.replace(".", SEPARATOR));
     }
