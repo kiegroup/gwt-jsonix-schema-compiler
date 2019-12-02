@@ -22,15 +22,13 @@ public class ClassNameUtils {
 
     private static final String SEPARATOR = "__";
 
-    private static final String CLASS_PREFIX = "JSI";
-
     public static String getJsInteropTypeName(final String className) {
         return join(PREFIX, className.replace(".", SEPARATOR));
     }
 
     public static String getJsInteropTypeName(final String moduleName,
                                               final String className) {
-        return join(PREFIX, moduleName, /*CLASS_PREFIX + */className.replace(".", SEPARATOR));
+        return join(PREFIX, moduleName, className.replace(".", SEPARATOR));
     }
 
     private static String join(final String... nameParts) {
