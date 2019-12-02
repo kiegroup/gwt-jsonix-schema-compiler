@@ -28,7 +28,7 @@ public class ClassNameUtils {
 
     public static String getJsInteropTypeName(final String moduleName,
                                               final String className) {
-        return join(PREFIX, moduleName, /*CLASS_PREFIX + */className.replace(".", SEPARATOR));
+        return join(PREFIX, moduleName, className.replace(".", SEPARATOR));
     }
 
     private static String join(final String... nameParts) {
