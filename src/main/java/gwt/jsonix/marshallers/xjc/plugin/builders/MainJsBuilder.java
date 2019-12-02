@@ -15,7 +15,6 @@
  */
 package gwt.jsonix.marshallers.xjc.plugin.builders;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
