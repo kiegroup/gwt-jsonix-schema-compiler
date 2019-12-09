@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
+import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JArray;
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
@@ -41,7 +42,7 @@ import jsinterop.annotations.JsType;
 import jsinterop.base.JsPropertyMap;
 import org.apache.commons.lang3.StringUtils;
 
-import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.MAIN_JS;
+import static gwt.jsonix.marshallers.xjc.plugin.JsonixGWTPlugin.MAIN_JS;
 import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.MARSHALL_CALLBACK;
 import static gwt.jsonix.marshallers.xjc.plugin.utils.BuilderUtils.UNMARSHALL_CALLBACK;
 
@@ -60,7 +61,11 @@ public class MainJsBuilder {
      * @param jCodeModel
      * @throws Exception
      */
-    public static void generateJSInteropMainJs(final Map<String, Map<String, JDefinedClass>> callbacksMap, final List<JDefinedClass> containersClasses, final Map<String, List<ConstructorMapper>> constructorsMap, JCodeModel jCodeModel) throws JClassAlreadyExistsException {
+    public static void generateJSInteropMainJs(final Map<String, Map<String, JDefinedClass>> callbacksMap,
+                                               final List<JDefinedClass> containersClasses,
+                                               final Map<String, List<ConstructorMapper>> constructorsMap,
+                                               final JCodeModel jCodeModel,
+                                               final String mainJsName) throws JClassAlreadyExistsException {
         if (containersClasses.isEmpty()) {
             return;
         }
@@ -68,7 +73,7 @@ public class MainJsBuilder {
         if (basePackage.contains(".")) {
             basePackage = basePackage.substring(0, basePackage.lastIndexOf('.'));
         }
-        final JDefinedClass mainJsClass = getMainJsClass(jCodeModel, basePackage);
+        final JDefinedClass mainJsClass = getMainJsClass(jCodeModel, basePackage, mainJsName);
         final JMethod getJSONObjectMethod = addGetJSONObjectMethod(mainJsClass, jCodeModel);
         addGetConstructorsMap(constructorsMap, mainJsClass, getJSONObjectMethod, jCodeModel);
         addInitializeJsInteropConstructors(mainJsClass, jCodeModel);
@@ -134,16 +139,20 @@ public class MainJsBuilder {
         addMarshall(toPopulate, mainJsClass, containerRef, callbackMap.get(MARSHALL_CALLBACK));
     }
 
-    protected static JDefinedClass getMainJsClass(final JCodeModel toPopulate, String basePackage) throws JClassAlreadyExistsException {
-        String fullMainJsName = basePackage + "." + MAIN_JS;
+    protected static JDefinedClass getMainJsClass(final JCodeModel toPopulate, String basePackage, String mainJsName) throws JClassAlreadyExistsException {
+        String fullMainJsName = basePackage + "." + mainJsName;
         JDefinedClass jDefinedClass = toPopulate._getClass(fullMainJsName);
-
         if (jDefinedClass == null) {
-            jDefinedClass = toPopulate._class(basePackage + "." + MAIN_JS);
+            jDefinedClass = toPopulate._class(basePackage + "." + mainJsName);
             JDocComment comment = jDefinedClass.javadoc();
             String commentString = "JSInterop adapter to use for marshalling/unmarshalling.";
             comment.append(commentString);
-            jDefinedClass.annotate(toPopulate.ref(JsType.class)).param("isNative", true).param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"));
+            final JAnnotationUse classAnnotation = jDefinedClass.annotate(toPopulate.ref(JsType.class))
+                    .param("isNative", true)
+                    .param("namespace", toPopulate.ref(JsPackage.class).staticRef("GLOBAL"));
+            if (!MAIN_JS.equals(mainJsName)) {
+                classAnnotation.param("name", mainJsName);
+            }
         }
         return jDefinedClass;
     }
@@ -158,7 +167,8 @@ public class MainJsBuilder {
                           firstParameterName, secondParameterRef, secondParameterName, callbackRef);
     }
 
-    protected static void addMarshall(JCodeModel toPopulate, JDefinedClass mainJsClass, JClass firstParameterRef, JClass callbackRef) {
+    protected static void addMarshall(JCodeModel toPopulate, JDefinedClass mainJsClass, JClass
+            firstParameterRef, JClass callbackRef) {
         String marshallMethodName = "marshall";
         String firstParameterName = StringUtils.uncapitalize(firstParameterRef.name());
         String secondParameterName = "dynamicNamespace";

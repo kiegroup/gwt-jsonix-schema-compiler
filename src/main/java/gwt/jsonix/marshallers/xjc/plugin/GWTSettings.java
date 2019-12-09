@@ -20,11 +20,15 @@ import java.io.File;
 import org.hisrc.jsonix.settings.Settings;
 import org.kohsuke.args4j.Option;
 
+import static gwt.jsonix.marshallers.xjc.plugin.JsonixGWTPlugin.MAIN_JS;
+
 public class GWTSettings extends Settings {
 
     private File jsinteropDirectory;
 
     private String jsMainPackage = "";
+
+    private String mainJsName = MAIN_JS;
 
     public File getJsinteropDirectory() {
         return jsinteropDirectory;
@@ -32,6 +36,10 @@ public class GWTSettings extends Settings {
 
     public String getJsMainPackage() {
         return jsMainPackage;
+    }
+
+    public String getMainJsName() {
+        return mainJsName;
     }
 
     @Option(name = "-jsid", aliases = {"-XjsinteropDirectory"})
@@ -42,5 +50,10 @@ public class GWTSettings extends Settings {
     @Option(name = "-jsmpkg", aliases = {"-XjsMainPackage"})
     public void setJsMainPackage(String jsMainPackage) {
         this.jsMainPackage = jsMainPackage;
+    }
+
+    @Option(name = "-jsmn", aliases = {"-XmainJsName"})
+    public void setMainJsName(String mainJsName) {
+        this.mainJsName = mainJsName;
     }
 }

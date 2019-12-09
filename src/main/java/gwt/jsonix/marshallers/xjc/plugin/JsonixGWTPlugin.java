@@ -66,6 +66,8 @@ public class JsonixGWTPlugin extends JsonixPlugin {
 
     public static final String OPTION_NAME = "Xgwtjsonix";
 
+    public static final String MAIN_JS = "MainJs";
+
     private GWTSettings settings = new GWTSettings();
 
     @Override
@@ -114,7 +116,7 @@ public class JsonixGWTPlugin extends JsonixPlugin {
             final Map<String, Map<String, JClass>> topLevelElementsMap = getTopLevelElementsMap(packageModuleMap.keySet(), definedClassesMap, model.getAllElements());
             final List<JDefinedClass> containersClasses = ContainerObjectBuilder.generateJSInteropContainerObjects(packageModuleMap, topLevelElementsMap, jCodeModel);
             final Map<String, Map<String, JDefinedClass>> callbacksMap = CallbacksBuilder.generateJSInteropCallbacks(containersClasses, jCodeModel);
-            MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, constructorsMap, jCodeModel);
+            MainJsBuilder.generateJSInteropMainJs(callbacksMap, containersClasses, constructorsMap, jCodeModel, settings.getMainJsName());
             writeJSInteropCode(jCodeModel, codeWriter);
         } catch (Exception e) {
             log(LogLevelSetting.ERROR, e.getMessage(), e);
