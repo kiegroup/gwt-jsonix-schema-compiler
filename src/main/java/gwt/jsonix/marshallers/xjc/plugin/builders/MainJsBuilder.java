@@ -56,10 +56,13 @@ public class MainJsBuilder {
 
     /**
      * Method to create the <b>JSInterop</b> <code>MainJs</code> class
+     *
      * @param callbacksMap
      * @param containersClasses
+     * @param constructorsMap
      * @param jCodeModel
-     * @throws Exception
+     * @param mainJsName
+     * @throws JClassAlreadyExistsException
      */
     public static void generateJSInteropMainJs(final Map<String, Map<String, JDefinedClass>> callbacksMap,
                                                final List<JDefinedClass> containersClasses,
@@ -83,6 +86,11 @@ public class MainJsBuilder {
         }
     }
 
+    /**
+     *
+     * @param mainJsClass
+     * @param jCodeModel
+     */
     protected static void addInitializeJsInteropConstructors(final JDefinedClass mainJsClass,
                                                              final JCodeModel jCodeModel) {
         final int mod = JMod.PUBLIC + JMod.FINAL + JMod.STATIC + JMod.NATIVE;
@@ -91,8 +99,17 @@ public class MainJsBuilder {
         method.annotate(jCodeModel.ref(JsMethod.class));
     }
 
-    protected static void addGetConstructorsMap(final Map<String, List<ConstructorMapper>> constructorsMap, final JDefinedClass mainJsClass,
-                                                JMethod getJSONObjectMethod, final JCodeModel jCodeModel) {
+    /**
+     *
+     * @param constructorsMap
+     * @param mainJsClass
+     * @param getJSONObjectMethod
+     * @param jCodeModel
+     */
+    protected static void addGetConstructorsMap(final Map<String, List<ConstructorMapper>> constructorsMap,
+                                                final JDefinedClass mainJsClass,
+                                                final JMethod getJSONObjectMethod,
+                                                final JCodeModel jCodeModel) {
         final int mod = JMod.PUBLIC + JMod.STATIC;
         final JMethod method = mainJsClass.method(mod, JsPropertyMap.class, "getConstructorsMap");
         method.annotate(jCodeModel.ref(JsOverlay.class));
@@ -113,6 +130,12 @@ public class MainJsBuilder {
         body._return(toReturnVar);
     }
 
+    /**
+     *
+     * @param mainJsClass
+     * @param jCodeModel
+     * @return
+     */
     protected static JMethod addGetJSONObjectMethod(final JDefinedClass mainJsClass,
                                                     final JCodeModel jCodeModel) {
         final int mod = JMod.PRIVATE + JMod.STATIC;
@@ -134,16 +157,36 @@ public class MainJsBuilder {
         return toReturn;
     }
 
-    protected static void populateJCodeModel(JCodeModel toPopulate, JClass containerRef, JDefinedClass mainJsClass, Map<String, JDefinedClass> callbackMap) {
+    /**
+     *
+     * @param toPopulate
+     * @param containerRef
+     * @param mainJsClass
+     * @param callbackMap
+     */
+    protected static void populateJCodeModel(final JCodeModel toPopulate,
+                                             final JClass containerRef,
+                                             final JDefinedClass mainJsClass,
+                                             final Map<String, JDefinedClass> callbackMap) {
         addUnmarshall(toPopulate, mainJsClass, callbackMap.get(UNMARSHALL_CALLBACK));
         addMarshall(toPopulate, mainJsClass, containerRef, callbackMap.get(MARSHALL_CALLBACK));
     }
 
-    protected static JDefinedClass getMainJsClass(final JCodeModel toPopulate, String basePackage, String mainJsName) throws JClassAlreadyExistsException {
+    /**
+     *
+     * @param toPopulate
+     * @param basePackage
+     * @param mainJsName
+     * @return
+     * @throws JClassAlreadyExistsException
+     */
+    protected static JDefinedClass getMainJsClass(final JCodeModel toPopulate,
+                                                  final String basePackage,
+                                                  final String mainJsName) throws JClassAlreadyExistsException {
         String fullMainJsName = basePackage + "." + mainJsName;
         JDefinedClass jDefinedClass = toPopulate._getClass(fullMainJsName);
         if (jDefinedClass == null) {
-            jDefinedClass = toPopulate._class(basePackage + "." + mainJsName);
+            jDefinedClass = toPopulate._class(fullMainJsName);
             JDocComment comment = jDefinedClass.javadoc();
             String commentString = "JSInterop adapter to use for marshalling/unmarshalling.";
             comment.append(commentString);
@@ -157,7 +200,15 @@ public class MainJsBuilder {
         return jDefinedClass;
     }
 
-    protected static void addUnmarshall(JCodeModel toPopulate, JDefinedClass mainJsClass, JClass callbackRef) {
+    /**
+     *
+     * @param toPopulate
+     * @param mainJsClass
+     * @param callbackRef
+     */
+    protected static void addUnmarshall(final JCodeModel toPopulate,
+                                        final JDefinedClass mainJsClass,
+                                        final JClass callbackRef) {
         String unmarshallMethodName = "unmarshall";
         JClass firstParameterRef = toPopulate.ref(String.class);
         String firstParameterName = "xmlString";
@@ -167,8 +218,17 @@ public class MainJsBuilder {
                           firstParameterName, secondParameterRef, secondParameterName, callbackRef);
     }
 
-    protected static void addMarshall(JCodeModel toPopulate, JDefinedClass mainJsClass, JClass
-            firstParameterRef, JClass callbackRef) {
+    /**
+     *
+     * @param toPopulate
+     * @param mainJsClass
+     * @param firstParameterRef
+     * @param callbackRef
+     */
+    protected static void addMarshall(final JCodeModel toPopulate,
+                                      final JDefinedClass mainJsClass,
+                                      final JClass firstParameterRef,
+                                      final JClass callbackRef) {
         String marshallMethodName = "marshall";
         String firstParameterName = StringUtils.uncapitalize(firstParameterRef.name());
         String secondParameterName = "dynamicNamespace";
@@ -178,6 +238,7 @@ public class MainJsBuilder {
     }
 
     /**
+     *
      * @param toPopulate
      * @param jDefinedClass
      * @param methodName
@@ -185,10 +246,12 @@ public class MainJsBuilder {
      * @param firstParameterName
      * @param callbackRef
      */
-    protected static void addCallbackMethod(JCodeModel toPopulate, JDefinedClass jDefinedClass, String methodName,
-                                            JClass firstParameterRef,
-                                            String firstParameterName,
-                                            JClass callbackRef) {
+    protected static void addCallbackMethod(final JCodeModel toPopulate,
+                                            final JDefinedClass jDefinedClass,
+                                            final String methodName,
+                                            final JClass firstParameterRef,
+                                            final String firstParameterName,
+                                            final JClass callbackRef) {
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.STATIC + JMod.NATIVE;
         String callbackPropertyName = StringUtils.uncapitalize(callbackRef.name());
         JMethod method = jDefinedClass.method(mod, Void.TYPE, methodName);
@@ -198,19 +261,24 @@ public class MainJsBuilder {
     }
 
     /**
+     *
      * @param toPopulate
      * @param jDefinedClass
      * @param methodName
      * @param firstParameterRef
      * @param firstParameterName
+     * @param secondParameterRef
+     * @param secondParameterName
      * @param callbackRef
      */
-    protected static void addCallbackMethod(JCodeModel toPopulate, JDefinedClass jDefinedClass, String methodName,
-                                            JClass firstParameterRef,
-                                            String firstParameterName,
-                                            JClass secondParameterRef,
-                                            String secondParameterName,
-                                            JClass callbackRef) {
+    protected static void addCallbackMethod(final JCodeModel toPopulate,
+                                            final JDefinedClass jDefinedClass,
+                                            final String methodName,
+                                            final JClass firstParameterRef,
+                                            final String firstParameterName,
+                                            final JClass secondParameterRef,
+                                            final String secondParameterName,
+                                            final JClass callbackRef) {
         int mod = JMod.PUBLIC + JMod.FINAL + JMod.STATIC + JMod.NATIVE;
         String callbackPropertyName = StringUtils.uncapitalize(callbackRef.name());
         JMethod method = jDefinedClass.method(mod, Void.TYPE, methodName);
