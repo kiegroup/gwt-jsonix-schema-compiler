@@ -56,7 +56,6 @@ import org.slf4j.LoggerFactory;
 public class BuilderUtils {
 
     public static final String CALLBACKS = "callbacks";
-    public static final String MAIN_JS = "MainJs";
     public static final String MARSHALL_CALLBACK = "MarshallCallback";
     public static final String UNMARSHALL_CALLBACK = "UnmarshallCallback";
 

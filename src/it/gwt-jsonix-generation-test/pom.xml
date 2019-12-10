@@ -41,13 +41,6 @@
         <groupId>org.jvnet.jaxb2.maven2</groupId>
         <artifactId>maven-jaxb2-plugin</artifactId>
         <executions>
-          <!--          <execution>-->
-          <!--            <id>print</id>-->
-          <!--            <phase>install</phase>-->
-          <!--            <goals>-->
-          <!--              <goal>print</goal>-->
-          <!--            </goals>-->
-          <!--          </execution>-->
           <execution>
             <id>generate-javascript</id>
             <phase>generate-sources</phase>
@@ -65,6 +58,7 @@
                 <arg>-Xnamespace-prefix</arg>
                 <arg>-jsid=${project.build.sourceDirectory}</arg>
                 <arg>-jsmpkg=org.kie.workbench.common.dmn.webapp.kogito.marshaller.mapper</arg>
+                <arg>-jsmn=TESTMainJs</arg>
               </args>
               <plugins>
                 <plugin>
