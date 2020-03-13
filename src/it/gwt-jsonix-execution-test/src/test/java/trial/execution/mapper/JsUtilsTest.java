@@ -82,6 +82,13 @@ public class JsUtilsTest extends AbstractGWTTestCase {
         // TODO {gcardosi} finish this test
     }
 
+    public void testToAttributesMapNull() {
+        Map<QName, String> object = null;
+        final Map<QName, String> retrieved = JsUtils.toAttributesMap(object);
+        assertNotNull(retrieved);
+        assertEquals(0, retrieved.size());
+    }
+
     public void testFromAttributesMap() {
         // TODO (?) {gcardosi}
     }

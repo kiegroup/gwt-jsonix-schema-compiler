@@ -404,7 +404,8 @@ public class JsUtilsBuilder {
         final JVar originalParameter = toReturn.param(JMod.FINAL, jCodeModel.ref(Object.class), "original");
         final JBlock block = toReturn.body();
         final JVar mapToReturn = block.decl(JMod.FINAL, narrowedMap, "toReturn", JExpr._new(hashMapField));
-        block.invoke("toAttributesMap").arg(mapToReturn).arg(originalParameter);
+        final JConditional nonNull = block._if(jCodeModel.ref(Objects.class).staticInvoke("nonNull").arg(originalParameter));
+        nonNull._then().invoke("toAttributesMap").arg(mapToReturn).arg(originalParameter);
         block._return(mapToReturn);
         final JDocComment javadoc = toReturn.javadoc();
         String commentString = "Extracts the <b>otherAttributes</b> property from a JavaScriptObject to a <i>regular</i> Java Map.";
@@ -554,7 +555,7 @@ public class JsUtilsBuilder {
 
     protected static JClass getQNameStringNarrowedMapEntryClass(JCodeModel jCodeModel) {
         JClass rawMapClass = jCodeModel.directClass(Map.Entry.class.getCanonicalName());
-        return rawMapClass.narrow(QName.class,  String.class);
+        return rawMapClass.narrow(QName.class, String.class);
     }
 
     protected static JClass getQNameStringNarrowedMapEntryConsumerClass(JCodeModel jCodeModel) {
@@ -562,6 +563,4 @@ public class JsUtilsBuilder {
         final JClass rawConsumer = jCodeModel.ref(Consumer.class);
         return rawConsumer.narrow(narrowedQnameMapEntryClass);
     }
-
-
 }
