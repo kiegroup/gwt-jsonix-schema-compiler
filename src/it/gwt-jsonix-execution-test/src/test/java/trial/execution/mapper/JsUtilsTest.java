@@ -109,13 +109,13 @@ public class JsUtilsTest extends AbstractGWTTestCase {
         final Object retrieved = JsUtils.fromAttributesMap(object);
         assertNotNull(retrieved);
 
-        assertNativeKeyIsMappedToValue(qname1.toString(), "1", retrieved);
-        assertNativeKeyIsMappedToValue(qname2.toString(), "2", retrieved);
+        assertTrue(isNativeKeyIsMappedToValue(qname1.toString(), "1", retrieved));
+        assertTrue(isNativeKeyIsMappedToValue(qname2.toString(), "2", retrieved));
     }
 
-    private static native boolean assertNativeKeyIsMappedToValue(final String key,
-                                                                 final String value,
-                                                                 final Object jso) /*-{
+    private static native boolean isNativeKeyIsMappedToValue(final String key,
+                                                             final String value,
+                                                             final Object jso) /*-{
         return jso[key] == value;
     }-*/;
 
