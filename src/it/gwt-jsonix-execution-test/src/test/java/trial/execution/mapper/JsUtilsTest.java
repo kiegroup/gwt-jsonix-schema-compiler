@@ -103,6 +103,7 @@ public class JsUtilsTest extends AbstractGWTTestCase {
         final Map<QName, String> object = new HashMap<>();
         final QName qname1 = new QName("", "one", "");
         final QName qname2 = new QName("", "two", "");
+        final QName qname3 = new QName("", "three", "");
         object.put(qname1, "1");
         object.put(qname2, "2");
 
@@ -111,6 +112,7 @@ public class JsUtilsTest extends AbstractGWTTestCase {
 
         assertTrue(isNativeKeyIsMappedToValue(qname1.toString(), "1", retrieved));
         assertTrue(isNativeKeyIsMappedToValue(qname2.toString(), "2", retrieved));
+        assertFalse(isNativeKeyIsMappedToValue(qname3.toString(), "3", retrieved));
     }
 
     private static native boolean isNativeKeyIsMappedToValue(final String key,
