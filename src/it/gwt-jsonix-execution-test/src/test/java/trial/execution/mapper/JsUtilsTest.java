@@ -16,11 +16,11 @@
 
 package trial.execution.mapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 import javax.xml.namespace.QName;
 
@@ -76,15 +76,50 @@ public class JsUtilsTest extends AbstractGWTTestCase {
     }
 
     public void testToAttributesMap() {
-        Map<QName, String> object = getObjectToMap();
+        Object object = getNativeAttributesMap();
         final Map<QName, String> retrieved = JsUtils.toAttributesMap(object);
         assertNotNull(retrieved);
-        // TODO {gcardosi} finish this test
+        assertEquals(2, retrieved.size());
+        final List<QName> list = new ArrayList<>(retrieved.keySet());
+        assertEquals("1", retrieved.get(list.get(0)));
+        assertEquals("2", retrieved.get(list.get(1)));
+    }
+
+    private static native Object getNativeAttributesMap() /*-{
+        var jso = {};
+        jso["one"] = "1";
+        jso["two"] = "2";
+        return jso;
+    }-*/;
+
+    public void testToAttributesMapNull() {
+        Map<QName, String> object = null;
+        final Map<QName, String> retrieved = JsUtils.toAttributesMap(object);
+        assertNotNull(retrieved);
+        assertEquals(0, retrieved.size());
     }
 
     public void testFromAttributesMap() {
-        // TODO (?) {gcardosi}
+        final Map<QName, String> object = new HashMap<>();
+        final QName qname1 = new QName("", "one", "");
+        final QName qname2 = new QName("", "two", "");
+        final QName qname3 = new QName("", "three", "");
+        object.put(qname1, "1");
+        object.put(qname2, "2");
+
+        final Object retrieved = JsUtils.fromAttributesMap(object);
+        assertNotNull(retrieved);
+
+        assertTrue(isNativeKeyIsMappedToValue(qname1.toString(), "1", retrieved));
+        assertTrue(isNativeKeyIsMappedToValue(qname2.toString(), "2", retrieved));
+        assertFalse(isNativeKeyIsMappedToValue(qname3.toString(), "3", retrieved));
     }
+
+    private static native boolean isNativeKeyIsMappedToValue(final String key,
+                                                             final String value,
+                                                             final Object jso) /*-{
+        return jso[key] == value;
+    }-*/;
 
     public void testNewWrappedInstance() {
         Object retrieved = JsUtils.newWrappedInstance();
@@ -150,15 +185,6 @@ public class JsUtilsTest extends AbstractGWTTestCase {
 
     private List<String> getPopulatedList() {
         return Arrays.asList(ARRAY_TO_ADD);
-    }
-
-    private Map<QName, String> getObjectToMap() {
-        Map<QName, String> toReturn = new HashMap<>();
-        IntStream.range(0, 2).forEach(index -> {
-            QName key = new QName("http://namespace-" + index, "localPart-" + index, "prefix" + index);
-            toReturn.put(key, "FIELD-" + index);
-        });
-        return toReturn;
     }
 
     private class TestObject {
