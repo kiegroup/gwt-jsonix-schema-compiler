@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.sun.codemodel.JAnnotationUse;
@@ -231,8 +232,8 @@ public class MainJsBuilder {
                                       final JClass callbackRef) {
         String marshallMethodName = "marshall";
         String firstParameterName = StringUtils.uncapitalize(firstParameterRef.name());
-        String secondParameterName = "dynamicNamespace";
-        JClass secondParameterRef = toPopulate.ref(String.class);
+        String secondParameterName = "namespaces";
+        JClass secondParameterRef = toPopulate.ref(JavaScriptObject.class);
         addCallbackMethod(toPopulate, mainJsClass, marshallMethodName, firstParameterRef,
                           firstParameterName, secondParameterRef, secondParameterName, callbackRef);
     }
