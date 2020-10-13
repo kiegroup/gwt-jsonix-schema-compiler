@@ -61,7 +61,7 @@
     <version.glassfish-javax_json>1.1.4</version.glassfish-javax_json>
     <version.javax_json_api>1.1.4</version.javax_json_api>
     <version.slf4j>1.7.30</version.slf4j>
-    <version.junit>4.13</version.junit>
+    <version.junit>4.13.1</version.junit>
   </properties>
 
   <scm>
