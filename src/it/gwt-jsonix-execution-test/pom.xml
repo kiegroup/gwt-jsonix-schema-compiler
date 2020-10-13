@@ -17,7 +17,7 @@
     <version.com.google.jsinterop.base>1.0.0-beta-1</version.com.google.jsinterop.base>
     <version.com.google.jsinterop.annotations>1.0.1</version.com.google.jsinterop.annotations>
     <version.gwt>2.8.2</version.gwt>
-    <version.junit>4.12</version.junit>
+    <version.junit>4.13.1</version.junit>
     <base.generated.directory>${project.basedir}/src/main/java/trial/execution</base.generated.directory>
     <js.destination>${project.basedir}/src/main/resources/trial/execution/js</js.destination>
   </properties>
