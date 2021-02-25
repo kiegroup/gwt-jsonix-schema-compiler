@@ -19,6 +19,7 @@
 <module>
 
   <inherits name="jsinterop.base.Base"/>
+  <inherits name="elemental2.core.Core"/>
 
   <!-- JSON COMPARATOR - TO BE REMOVED -->
   <inherits name="com.google.gwt.json.JSON"/>

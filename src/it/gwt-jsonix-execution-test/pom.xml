@@ -17,6 +17,7 @@
     <version.com.google.jsinterop.base>1.0.0</version.com.google.jsinterop.base>
     <version.com.google.jsinterop.annotations>2.0.0</version.com.google.jsinterop.annotations>
     <version.gwt>2.9.0</version.gwt>
+    <version.elemental2>1.1.0</version.elemental2>
     <version.junit>4.13.1</version.junit>
     <base.generated.directory>${project.basedir}/src/main/java/trial/execution</base.generated.directory>
     <js.destination>${project.basedir}/src/main/resources/trial/execution/js</js.destination>
@@ -38,6 +39,11 @@
         <groupId>org.jvnet.jaxb2_commons</groupId>
         <artifactId>jaxb2-namespace-prefix</artifactId>
         <version>${version.jaxb2-namespace-prefix}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.elemental2</groupId>
+        <artifactId>elemental2-core</artifactId>
+        <version>${version.elemental2}</version>
       </dependency>
       <dependency>
         <groupId>com.google.jsinterop</groupId>
@@ -77,6 +83,10 @@
     <dependency>
       <groupId>com.google.jsinterop</groupId>
       <artifactId>base</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.elemental2</groupId>
+      <artifactId>elemental2-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.gwt</groupId>

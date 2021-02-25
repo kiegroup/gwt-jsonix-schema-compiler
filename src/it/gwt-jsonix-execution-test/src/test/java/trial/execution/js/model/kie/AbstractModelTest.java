@@ -184,9 +184,6 @@ public abstract class AbstractModelTest extends AbstractGWTTestCase {
         inject("Jsonix-all.js");
         ScriptInjector.fromString(KIE_JS).setWindow(ScriptInjector.TOP_WINDOW).inject();
         ScriptInjector.fromString(MAIN_JS).setWindow(ScriptInjector.TOP_WINDOW).inject();
-        final JsPropertyMap constructorsMap = MainJs.getConstructorsMap();
-        assertNotNull(constructorsMap);
-        MainJs.initializeJsInteropConstructors(constructorsMap);
     }
 
     protected void getJSIName(JSIName retrieved, String nameSpaceUri, String localPart, String prefix, String key, String string) {
