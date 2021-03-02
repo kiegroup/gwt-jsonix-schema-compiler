@@ -73,8 +73,8 @@ public class JSINameBuilder {
         final String jsTypeName =  getJsInteropTypeName(toReturn.fullName());
 
         toReturn.annotate(jCodeModel.ref(JsType.class))
-                .param("namespace", nameSpaceExpression)
-                .param("name", jsTypeName)
+                .param("namespace", "<global>")
+                .param("name", "Object")
                 .param("isNative", true);
 
         JDocComment comment = toReturn.javadoc();

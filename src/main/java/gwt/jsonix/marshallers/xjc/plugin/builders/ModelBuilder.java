@@ -57,6 +57,7 @@ import gwt.jsonix.marshallers.xjc.plugin.dtos.ConstructorMapper;
 import gwt.jsonix.marshallers.xjc.plugin.exceptions.ParseModelException;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 import jsinterop.base.JsArrayLike;
 import org.apache.commons.lang3.StringUtils;
@@ -117,7 +118,6 @@ public class ModelBuilder {
         }
         final CClassInfoParent parent = cClassInfo.parent();
         final JDefinedClass jDefinedClass;
-        final JExpression nameSpaceExpression;
         final CClassInfo basecClassInfo = cClassInfo.getBaseClass();
         JClass jDefinedBaseClass = null;
 
@@ -144,7 +144,6 @@ public class ModelBuilder {
             jDefinedClass = getFromParent(jDefinedBaseClass, parentJSIClass, nameSpace);
             moduleName = packageModuleMap.get(jDefinedClass._package().name());
             nameSpaceString = getJsInteropTypeName(moduleName, parentJSIClass.fullName());
-            nameSpaceExpression = JExpr.lit(nameSpaceString);
             jsTypeName = shortClassName;
             parentClassName = ((CClassInfo) cClassInfo.parent()).shortName;
         } else {
@@ -152,7 +151,6 @@ public class ModelBuilder {
 
             jDefinedClass = jDefinedBaseClass != null ? toPopulate._class(fullClassName)._extends(jDefinedBaseClass) : toPopulate._class(fullClassName);
             moduleName = packageModuleMap.get(jDefinedClass._package().name());
-            nameSpaceExpression = toPopulate.ref(JsPackage.class).staticRef("GLOBAL");
             jsTypeName = getJsInteropTypeName(moduleName, jDefinedClass.fullName());
             parentClassName = null;
         }
@@ -163,8 +161,8 @@ public class ModelBuilder {
         comment.append(commentString);
 
         jDefinedClass.annotate(toPopulate.ref(JsType.class))
-                .param("namespace", nameSpaceExpression)
-                .param("name", jsTypeName)
+                .param("namespace", "<global>")
+                .param("name", "Object")
                 .param("isNative", true);
         String typeNameConstant = Stream.of(moduleName, parentClassName, nameSpace).filter(Objects::nonNull).collect(Collectors.joining("."));
 
@@ -172,6 +170,8 @@ public class ModelBuilder {
         mapToPopulate.computeIfAbsent(moduleName, k -> new ArrayList<>());
         mapToPopulate.get(moduleName).add(toAdd);
 
+        jDefinedClass.constructor(JMod.PROTECTED);
+        addNewInstanceMethod(cClassInfo, jDefinedClass, toPopulate);
         final JFieldVar typeNameField = addTypeName(jDefinedClass, toPopulate, typeNameConstant);
         addInstanceOf(jDefinedClass, jsUtilsClass, typeNameField);
 
@@ -185,6 +185,20 @@ public class ModelBuilder {
         if (cClassInfo.declaresAttributeWildcard()) {
             addOtherAttributesProperty(toPopulate, jDefinedClass, jsUtilsClass, nameSpace);
         }
+    }
+
+    private static void addNewInstanceMethod(CClassInfo cClassInfo, JDefinedClass jDefinedClass, JCodeModel jCodeModel) {
+        final int mods = JMod.PUBLIC + JMod.STATIC;
+        final String methodName = "newInstance";
+        final JClass jsClazz = jCodeModel.ref("jsinterop.base.Js");
+        final JMethod method = jDefinedClass.method(mods, jDefinedClass, methodName);
+        final JBlock body = method.body();
+        final JVar toReturn = body.decl(jDefinedClass, "toReturn", JExpr._new(jDefinedClass));
+        final JInvocation asPropertyMap = jsClazz.staticInvoke("asPropertyMap").arg(toReturn);
+        final JInvocation set = asPropertyMap.invoke("set").arg("TYPE_NAME").arg(JExpr.ref("TYPE"));
+        body.add(set);
+        method.annotate(JsOverlay.class);
+        body._return(toReturn);
     }
 
     protected static void populateJCodeModel(Map<String, JClass> definedClassesMap, JCodeModel toPopulate, CEnumLeafInfo cEnumLeafInfo) throws JClassAlreadyExistsException {

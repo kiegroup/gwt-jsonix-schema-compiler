@@ -27,7 +27,7 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testInstanceOf() {
-        JSITComponentWidths retrieved = new JSITComponentWidths();
+        JSITComponentWidths retrieved = JSITComponentWidths.newInstance();
         assertNotNull(retrieved);
         assertTrue(JSITComponentWidths.instanceOf(retrieved));
     }
@@ -37,19 +37,19 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testGetTYPE_NAME() {
-        String retrieved = new JSITComponentWidths().getTYPE_NAME();
+        String retrieved = JSITComponentWidths.newInstance().getTYPE_NAME();
         assertNotNull(retrieved);
         assertEquals("KIE.TComponentWidths", retrieved);
     }
 
     public void testGetWidth() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         assertNotNull(jsitComponentWidths.getWidth());
         assertTrue(jsitComponentWidths.getWidth().isEmpty());
     }
 
     public void testAddWidth() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         jsitComponentWidths.addWidth(4.5F);
         final List<Float> retrieved = jsitComponentWidths.getWidth();
         assertNotNull(retrieved);
@@ -58,7 +58,7 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testAddAllWidth() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         float[] toAdd = {3.2F, 7.42F, 1.214F};
         jsitComponentWidths.addAllWidth(toAdd);
         final List<Float> retrieved = jsitComponentWidths.getWidth();
@@ -70,7 +70,7 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testRemoveWidth() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         float[] toAdd = {3.2F, 7.42F, 1.214F};
         jsitComponentWidths.addAllWidth(toAdd);
         jsitComponentWidths.removeWidth(1);
@@ -82,7 +82,7 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testGetSetNativeWidth() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         assertNull(jsitComponentWidths.getNativeWidth());
         float[] toAdd = {3.2F, 7.42F, 1.214F};
         jsitComponentWidths.setNativeWidth(toAdd);
@@ -90,7 +90,7 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testSetWidth() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         List<Float> toSet = Arrays.asList(3.2F, 7.42F, 1.214F);
         jsitComponentWidths.setWidth(toSet);
         final float[] retrieved = jsitComponentWidths.getNativeWidth();
@@ -101,7 +101,7 @@ public class JSITComponentsWidthsTest extends AbstractModelTest {
     }
 
     public void testGetSetDmnElementRef() {
-        JSITComponentWidths jsitComponentWidths = new JSITComponentWidths();
+        JSITComponentWidths jsitComponentWidths = JSITComponentWidths.newInstance();
         assertNull(jsitComponentWidths.getDmnElementRef());
         jsitComponentWidths.setDmnElementRef("dmnElementRefParam");
         String retrieved = jsitComponentWidths.getDmnElementRef();
