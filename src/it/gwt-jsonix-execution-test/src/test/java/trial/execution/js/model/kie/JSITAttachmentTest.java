@@ -24,7 +24,7 @@ public class JSITAttachmentTest extends AbstractModelTest {
     }
 
     public void testInstanceOf() {
-        JSITAttachment retrieved = new JSITAttachment();
+        JSITAttachment retrieved = JSITAttachment.newInstance();
         assertNotNull(retrieved);
         assertTrue(JSITAttachment.instanceOf(retrieved));
     }
@@ -34,13 +34,13 @@ public class JSITAttachmentTest extends AbstractModelTest {
     }
 
     public void testGetTYPE_NAME() {
-        String retrieved = new JSITAttachment().getTYPE_NAME();
+        String retrieved = JSITAttachment.newInstance().getTYPE_NAME();
         assertNotNull(retrieved);
         assertEquals("KIE.TAttachment", retrieved);
     }
 
     public void testGetSetValue() {
-        JSITAttachment jsitAttachment = new JSITAttachment();
+        JSITAttachment jsitAttachment = JSITAttachment.newInstance();
         assertNull(jsitAttachment.getValue());
         jsitAttachment.setValue("valueParam");
         String retrieved = jsitAttachment.getValue();
@@ -49,7 +49,7 @@ public class JSITAttachmentTest extends AbstractModelTest {
     }
 
     public void testGetSetUrl() {
-        JSITAttachment jsitAttachment = new JSITAttachment();
+        JSITAttachment jsitAttachment = JSITAttachment.newInstance();
         assertNull(jsitAttachment.getUrl());
         jsitAttachment.setUrl("urlParam");
         String retrieved = jsitAttachment.getUrl();
@@ -58,7 +58,7 @@ public class JSITAttachmentTest extends AbstractModelTest {
     }
 
     public void testGetSetName() {
-        JSITAttachment jsitAttachment = new JSITAttachment();
+        JSITAttachment jsitAttachment = JSITAttachment.newInstance();
         assertNull(jsitAttachment.getName());
         jsitAttachment.setName("nameParam");
         String retrieved = jsitAttachment.getName();

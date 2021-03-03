@@ -30,7 +30,7 @@ public class JSITComponentsWidthsExtensionTest extends AbstractModelTest {
     }
 
     public void testInstanceOf() {
-        JSITComponentsWidthsExtension retrieved = new JSITComponentsWidthsExtension();
+        JSITComponentsWidthsExtension retrieved = JSITComponentsWidthsExtension.newInstance();
         assertNotNull(retrieved);
         assertTrue(JSITComponentsWidthsExtension.instanceOf(retrieved));
     }
@@ -40,21 +40,21 @@ public class JSITComponentsWidthsExtensionTest extends AbstractModelTest {
     }
 
     public void testGetTYPE_NAME() {
-        String retrieved = new JSITComponentsWidthsExtension().getTYPE_NAME();
+        String retrieved = JSITComponentsWidthsExtension.newInstance().getTYPE_NAME();
         assertNotNull(retrieved);
         assertEquals("KIE.TComponentsWidthsExtension", retrieved);
     }
 
     public void testGetComponentWidths() {
-        JSITComponentsWidthsExtension jsitComponentWidths = new JSITComponentsWidthsExtension();
+        JSITComponentsWidthsExtension jsitComponentWidths = JSITComponentsWidthsExtension.newInstance();
         final List<JSITComponentWidths> retrieved = jsitComponentWidths.getComponentWidths();
         assertNotNull(retrieved);
         assertTrue(retrieved.isEmpty());
     }
 
     public void testAddComponentWidths() {
-        JSITComponentsWidthsExtension jsitComponentWidths = new JSITComponentsWidthsExtension();
-        JSITComponentWidths toAdd = new JSITComponentWidths();
+        JSITComponentsWidthsExtension jsitComponentWidths = JSITComponentsWidthsExtension.newInstance();
+        JSITComponentWidths toAdd = JSITComponentWidths.newInstance();
         jsitComponentWidths.addComponentWidths(toAdd);
         final List<JSITComponentWidths> retrieved = jsitComponentWidths.getComponentWidths();
         assertNotNull(retrieved);
@@ -63,8 +63,8 @@ public class JSITComponentsWidthsExtensionTest extends AbstractModelTest {
     }
 
     public void testAddAllComponentWidths() {
-        JSITComponentsWidthsExtension jsitComponentWidths = new JSITComponentsWidthsExtension();
-        JSITComponentWidths[] toAdd = {new JSITComponentWidths(), new JSITComponentWidths(), new JSITComponentWidths()};
+        JSITComponentsWidthsExtension jsitComponentWidths = JSITComponentsWidthsExtension.newInstance();
+        JSITComponentWidths[] toAdd = {JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance()};
         jsitComponentWidths.addAllComponentWidths(toAdd);
         final List<JSITComponentWidths> retrieved = jsitComponentWidths.getComponentWidths();
         assertNotNull(retrieved);
@@ -75,8 +75,8 @@ public class JSITComponentsWidthsExtensionTest extends AbstractModelTest {
     }
 
     public void testRemovComponentWidths() {
-        JSITComponentsWidthsExtension jsitComponentWidths = new JSITComponentsWidthsExtension();
-        JSITComponentWidths[] toAdd = {new JSITComponentWidths(), new JSITComponentWidths(), new JSITComponentWidths()};
+        JSITComponentsWidthsExtension jsitComponentWidths = JSITComponentsWidthsExtension.newInstance();
+        JSITComponentWidths[] toAdd = {JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance()};
         jsitComponentWidths.addAllComponentWidths(toAdd);
         jsitComponentWidths.removeComponentWidths(1);
         final List<JSITComponentWidths> retrieved = jsitComponentWidths.getComponentWidths();
@@ -87,16 +87,16 @@ public class JSITComponentsWidthsExtensionTest extends AbstractModelTest {
     }
 
     public void testGetSetNativeComponentWidths() {
-        JSITComponentsWidthsExtension jsitComponentWidths = new JSITComponentsWidthsExtension();
+        JSITComponentsWidthsExtension jsitComponentWidths = JSITComponentsWidthsExtension.newInstance();
         assertNull(jsitComponentWidths.getNativeComponentWidths());
-        JsArrayLike<JSITComponentWidths> toAdd = JsUtils.toJsArrayLike(Arrays.asList(new JSITComponentWidths(), new JSITComponentWidths(), new JSITComponentWidths()));
+        JsArrayLike<JSITComponentWidths> toAdd = JsUtils.toJsArrayLike(Arrays.asList(JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance()));
         jsitComponentWidths.setNativeComponentWidths(toAdd);
         assertEquals(toAdd, jsitComponentWidths.getNativeComponentWidths());
     }
 
     public void testSetComponentWidths() {
-        JSITComponentsWidthsExtension jsitComponentWidths = new JSITComponentsWidthsExtension();
-        List<JSITComponentWidths> toSet = Arrays.asList(new JSITComponentWidths(), new JSITComponentWidths(), new JSITComponentWidths());
+        JSITComponentsWidthsExtension jsitComponentWidths = JSITComponentsWidthsExtension.newInstance();
+        List<JSITComponentWidths> toSet = Arrays.asList(JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance(), JSITComponentWidths.newInstance());
         jsitComponentWidths.setComponentWidths(toSet);
         JsArrayLike<JSITComponentWidths> retrieved = jsitComponentWidths.getNativeComponentWidths();
         assertEquals(toSet.size(), retrieved.getLength());
