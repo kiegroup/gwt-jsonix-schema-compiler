@@ -47,7 +47,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <version.gwt>2.9.0</version.gwt>
+    <version.gwt>2.10.0</version.gwt>
     <version.jaxb>2.3.1</version.jaxb>
     <version.jsinterop.base>1.0.0</version.jsinterop.base>
     <version.jsinterop.annotations>2.0.0</version.jsinterop.annotations>
